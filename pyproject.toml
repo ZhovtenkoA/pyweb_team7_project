@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pyweb-team7-project"
 version = "0.1.0"
-description = ""
+description = "Застосунок 'PhotoShare' на REST API, над назвої ще працюємо"
 authors = ["ZhovtenkoA <127408550+ZhovtenkoA@users.noreply.github.com>"]
 readme = "README.md"
 packages = [{include = "pyweb_team7_project"}]
@@ -10,7 +10,27 @@ packages = [{include = "pyweb_team7_project"}]
 python = "^3.10"
 fastapi = "^0.104.1"
 uvicorn = {extras = ["standard"], version = "^0.24.0.post1"}
+sqlalchemy = "^2.0.23"
+alembic = "^1.12.1"
+pydantic = "^2.4.2"
+libgravatar = "^1.0.4"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.6"
+fastapi-mail = "^1.4.1"
+fastapi-limiter = "^0.1.5"
+cloudinary = "^1.36.0"
+psycopg2 = "^2.9.9"
 
+[tool.poetry.group.dev.dependencies]
+sphinx = "^7.2.6"
+
+[tool.poetry.group.test.dependencies]
+httpx = "^0.25.0"
+pytest = "^7.4.3"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 [build-system]
 requires = ["poetry-core"]
