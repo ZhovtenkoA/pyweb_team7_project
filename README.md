@@ -1,5 +1,5 @@
-# pyweb_team7_project
- Repository for our REST Api project on python web14
+# SprintCoders_project
+ Repository for our REST Api project "FotoRahmen"
 Перед початком роботи переконайтеся, що встановлені наступні компоненти та залежності з pyproject.toml
 
 ## Встановлення та налаштування

@@ -9,7 +9,7 @@ from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 
 
-from pyweb_team7_project.routes import  auth
+from pyweb_team7_project.routes import  auth, tags
 from pyweb_team7_project.database.db import get_db
 
 app = FastAPI()
@@ -91,3 +91,4 @@ def healthchecher(db: Session = Depends(get_db)):
                             detail="Error connecting to the database")
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(tags.router, prefix="/api")

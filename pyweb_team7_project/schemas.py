@@ -26,3 +26,14 @@ class TokenModel(BaseModel):
     
 class EmailSchema(BaseModel):
     email: EmailStr
+
+class TagModel(BaseModel):
+    name: str = Field(max_length=25)
+
+
+class TagResponse(TagModel):
+    id: int
+    name: str = Field(max_length=25)
+    
+    class Config:
+        from_attributes = True
