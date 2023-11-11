@@ -48,7 +48,7 @@ class Comment(Base):
     id = Column(Integer, primary_key=True)
     content = Column(String(250), nullable=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    edited_at = Column(DateTime, nullable=True, onupdate=func.now())
+    edited_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", backref="comments")
     image_id = Column(Integer, ForeignKey("images.id"))

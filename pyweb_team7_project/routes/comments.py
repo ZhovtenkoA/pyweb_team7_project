@@ -23,4 +23,12 @@ async def get_comment_by_id(comment_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=CommentResponseModel, status_code=status.HTTP_201_CREATED)
 async def create_comment(body: CommentRequestModel, user: User = Depends(auth_service.get_current_user),
                          db: Session = Depends(get_db)):
-    return await comments_repo.create_comment(body=body, user=user, db=db)
+    created_comment = await comments_repo.create_comment(body=body, user=user, db=db)
+
+    if not created_comment:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Image with id={body.image_id} does not exist!"
+        )
+
+    return created_comment

@@ -28,7 +28,7 @@ async def create_comment(body: CommentRequestModel, user: User, db: Session) -> 
     :param db: Session: Access the database
     :return: The new comment object
     """
-    image_db = db.query(Image).filter(id=body.image_id).first()
+    image_db = db.query(Image).filter(Image.id == body.image_id).first()
 
     if image_db:
         new_comment = Comment()
@@ -36,8 +36,9 @@ async def create_comment(body: CommentRequestModel, user: User, db: Session) -> 
 
         new_comment.user = user
         new_comment.image = image_db
+        db.add(new_comment)
         db.commit()
-        # db.refresh(contact)
+        db.refresh(new_comment)
         return new_comment
 
 
@@ -53,7 +54,7 @@ async def update_tag(comment_id: int, body: CommentRequestModel, db: Session) ->
     :param db: Session: Pass the database session to the function
     :return: The comment object
     """
-    comment_db = db.query(Comment).filter(id=comment_id).first()
+    comment_db = db.query(Comment).filter(Comment.id == comment_id).first()
     if comment_db:
         comment_db.content = body.content
         db.commit()
@@ -72,7 +73,7 @@ async def remove_comment(comment_id: int, db: Session) -> Comment | None:
     :param db: Session: Connect to the database
     :return: The comment that was removed
     """
-    comment_db = db.query(Comment).filter(id=comment_id).first()
+    comment_db = db.query(Comment).filter(Comment.id == comment_id).first()
     # await comment_db = get_conmment(comment_id, db)
 
     if comment_db:
