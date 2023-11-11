@@ -47,7 +47,6 @@ class TagResponse(TagModel):
 
 
 class CommentRequestModel(BaseModel):
-    user_id: int
     image_id: int
     content: str = Field(max_length=250)
 
