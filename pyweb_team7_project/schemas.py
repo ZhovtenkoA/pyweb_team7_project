@@ -52,3 +52,4 @@ class ImageResponse(BaseModel):
 
     class Config:
         orm_mode = True
+

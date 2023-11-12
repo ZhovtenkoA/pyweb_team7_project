@@ -41,3 +41,4 @@ async def delete_image(image_id: int = Path(...), current_user: User = Depends(a
     if image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
     return image
+
