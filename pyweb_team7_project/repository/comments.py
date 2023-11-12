@@ -70,6 +70,18 @@ async def create_comment(body: CommentRequestModel, user: User, image_db: Image,
 
 
 async def update_comment(comment_db: Comment, body: CommentRequestModel, db: Session) -> Comment | None:
+    """
+    The update_comment function updates a comment in the database.
+        Args:
+            comment_db (Comment): The Comment object to be updated.
+            body (CommentRequestModel): The new content of the Comment object.
+            db (Session): A Session instance for interacting with the database.
+
+    :param comment_db: Comment: Pass the comment object to the function
+    :param body: CommentRequestModel: Get the content of the comment
+    :param db: Session: Access the database
+    :return: The updated comment
+    """
     comment_db.content = body.content
     db.commit()
     db.refresh(comment_db)
