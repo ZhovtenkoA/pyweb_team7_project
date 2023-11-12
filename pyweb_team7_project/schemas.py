@@ -51,6 +51,10 @@ class CommentRequestModel(BaseModel):
     content: str = Field(max_length=250)
 
 
+class CommentUpdateModel(BaseModel):
+    content: str = Field(max_length=250)
+
+
 class CommentResponseModel(BaseModel):
     id: int
     user_id: int
