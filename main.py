@@ -9,7 +9,7 @@ from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 
 
-from pyweb_team7_project.routes import  auth
+from pyweb_team7_project.routes import auth, images
 from pyweb_team7_project.database.db import get_db
 
 app = FastAPI()
@@ -26,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 async def startup():
     """
@@ -37,7 +38,6 @@ async def startup():
     print('------------- STARTUP --------------')
     r = await redis.Redis(host='localhost', port=6379, db=0, encoding="utf-8", decode_responses=True)
     await FastAPILimiter.init(r)
-
 
 
 @app.middleware("http")
@@ -57,7 +57,6 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
-
 @app.get("/", name='Корень')
 def read_root():
     """
@@ -68,6 +67,7 @@ def read_root():
     :return: A dictionary
     """
     return {"message": "Rest API team7 web14 project v.1"}
+
 
 @app.get("/api/healthchecker")
 def healthchecher(db: Session = Depends(get_db)):
@@ -90,4 +90,7 @@ def healthchecher(db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Error connecting to the database")
 
+
 app.include_router(auth.router, prefix="/api")
+app.include_router(images.router, prefix='/api')
+
