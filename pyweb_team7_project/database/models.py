@@ -4,6 +4,7 @@ from sqlalchemy.sql.sqltypes import DateTime
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = "users"
     
