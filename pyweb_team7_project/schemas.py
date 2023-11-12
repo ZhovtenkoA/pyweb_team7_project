@@ -41,3 +41,14 @@ class CreateImageModel(BaseModel):
 
 class UpdateImageModel(BaseModel):
     new_description: str
+
+
+class ImageResponse(BaseModel):
+    id: int
+    filename: str
+    description: str
+    user_id: int
+    tags: List[str]  # Assuming Tag has a 'name' attribute
+
+    class Config:
+        orm_mode = True
