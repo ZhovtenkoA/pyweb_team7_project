@@ -58,7 +58,7 @@ async def create_image_and_upload_to_cloudinary(db: Session, file, description: 
         secure=True
     )
 
-    cloudinary_response = cloudinary.uploader.upload(file, **cloudinary_config)
+    cloudinary_response = cloudinary.uploader.upload(file)
 
     image.file_url = cloudinary_response.get('secure_url')
 
