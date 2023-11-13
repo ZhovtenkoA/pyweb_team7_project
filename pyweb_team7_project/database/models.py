@@ -21,7 +21,9 @@ class Image(Base):
     __tablename__ = "images"
 
     id = Column(Integer, primary_key=True)
-    filename = Column(String(250), unique=True, nullable=False)
+    # filename = Column(String(250), unique=True, nullable=False)
+    file_url = Column(String(250),  nullable=True)
+    public_id = Column(String(100), nullable=True)
     description = Column(String(250), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", backref="images")
