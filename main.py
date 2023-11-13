@@ -1,4 +1,5 @@
 import time
+
 import redis.asyncio as redis
 import uvicorn
 from sqlalchemy.orm import Session
@@ -6,16 +7,19 @@ from sqlalchemy import text
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi_limiter import FastAPILimiter
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from pyweb_team7_project.routes import auth, transformations, images
 from pyweb_team7_project.database.db import get_db
+from pyweb_team7_project.routes import auth, tags, comments
 
 app = FastAPI()
 
-origins = [ 
+origins = [
     "http://localhost:3000"
-    ]
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,6 +28,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 @app.on_event("startup")
@@ -68,6 +73,7 @@ def read_root():
     return {"message": "Rest API team7 web14 project v.1"}
 
 
+
 @app.get("/api/healthchecker")
 def healthchecher(db: Session = Depends(get_db)):
     """
@@ -91,6 +97,8 @@ def healthchecher(db: Session = Depends(get_db)):
 
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(tags.router, prefix="/api")
+app.include_router(comments.router, prefix="/api")
 app.include_router(images.router, prefix='/api')
 # app.include_router(transformations.router, prefix='/api')
 
