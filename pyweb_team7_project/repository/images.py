@@ -2,6 +2,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 import cloudinary
+from cloudinary.uploader import upload
 
 from pyweb_team7_project.database.models import User, Image, Tag
 from pyweb_team7_project.conf.config import settings
@@ -44,7 +45,6 @@ from pyweb_team7_project.conf.config import settings
 
 
 async def create_image_and_upload_to_cloudinary(db: Session, file, description: str, user_id: int, tag_names: list = None) -> Image:
-
     user = db.query(User).filter_by(id=user_id).first()
     if not user:
         raise Exception("User not found")
@@ -58,9 +58,11 @@ async def create_image_and_upload_to_cloudinary(db: Session, file, description: 
         secure=True
     )
 
-    cloudinary_response = cloudinary.uploader.upload(file)
-
-    image.file_url = cloudinary_response.get('secure_url')
+    result = upload(file.file)
+    # Отримуємо public ID завантаженого зображення
+    image.public_id = result.get('public_id')
+    # Отримайте URL обробленого зображення
+    image.file_url = result.get('secure_url')
 
     if tag_names:
         for tag_name in tag_names:
