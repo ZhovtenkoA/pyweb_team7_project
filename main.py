@@ -1,5 +1,6 @@
 import time
 import redis.asyncio as redis
+import uvicorn
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -9,7 +10,7 @@ from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 
 
-from pyweb_team7_project.routes import auth, transformations
+from pyweb_team7_project.routes import auth, transformations, images
 # from pyweb_team7_project.routes import auth, images
 from pyweb_team7_project.database.db import get_db
 
@@ -93,6 +94,8 @@ def healthchecher(db: Session = Depends(get_db)):
 
 
 app.include_router(auth.router, prefix="/api")
-# app.include_router(images.router, prefix='/api')
+app.include_router(images.router, prefix='/api')
 app.include_router(transformations.router, prefix='/api')
 
+if __name__ == '__main__':
+    uvicorn.run(app="main:app", reload=True)

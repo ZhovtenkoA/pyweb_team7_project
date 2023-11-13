@@ -8,7 +8,8 @@ SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_url
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-#Dependecy
+
+# Dependecy
 def get_db():
     """
     The get_db function opens a new database connection if there is none yet for the current application context.
