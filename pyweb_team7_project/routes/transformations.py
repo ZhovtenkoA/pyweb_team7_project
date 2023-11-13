@@ -31,6 +31,8 @@ async def upload_image(file: UploadFile = File(), current_user: User = Depends(a
     # Отримайте URL обробленого зображення
     fileurl = result["secure_url"]
 
+    # image = await repository_images.create_image(db=db, fileurl=fileurl, public_id=public_id, description='', user_id=current_user.id)
+
     user = db.query(User).filter_by(id=current_user.id).first()
     if not user:
         raise Exception("User not found")
@@ -40,7 +42,6 @@ async def upload_image(file: UploadFile = File(), current_user: User = Depends(a
     db.commit()
     db.refresh(image)
     
-    # image = repository_images.create_image(db=db, fileurl=fileurl, public_id=public_id, user_id=current_user.id)
     return image
 
 @router.patch('/transformations_grayscale/{image_id}')
