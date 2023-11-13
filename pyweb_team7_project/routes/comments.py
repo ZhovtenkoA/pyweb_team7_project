@@ -24,7 +24,7 @@ async def get_comment_by_id(comment_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/for_image/{image_id}", response_model=List[CommentResponseModel])
-async def read_tags(image_id: int, skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
+async def get_all_image_comments(image_id: int, skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     comments_result = await comments_repo.get_all_image_comments(image_id=image_id, skip=skip, limit=limit, db=db)
     return comments_result
 
@@ -62,7 +62,7 @@ async def remove_comment(comment_id: int, db: Session = Depends(get_db),
 
 
 @router.put("/{comment_id}", response_model=CommentResponseModel)
-async def update_tag(comment_id: int, body: CommentUpdateModel, db: Session = Depends(get_db),
+async def update_comment(comment_id: int, body: CommentUpdateModel, db: Session = Depends(get_db),
                      user: User = Depends(auth_service.get_current_user)):
     comment_db = await comments_repo.get_comment_by_id(comment_id=comment_id, db=db)
     if comment_db is None:
