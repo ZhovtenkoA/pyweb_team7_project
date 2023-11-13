@@ -16,33 +16,33 @@ from pyweb_team7_project.schemas import UserDb, CreateImageModel, UpdateImageMod
 
 router = APIRouter(prefix="/transformations", tags=["transformations"])
 
-@router.patch('/transformations_upload_image')
-async def upload_image(file: UploadFile = File(), current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
-    cloudinary.config(
-        cloud_name=settings.cloudinary_name,
-        api_key=settings.cloudinary_api_key,
-        api_secret=settings.cloudinary_api_secret,
-        secure=True
-    )
-    # result = cloudinary.uploader.upload(file.file)
-    result = upload(file.file)
-    # Отримуємо public ID завантаженого зображення
-    public_id = result['public_id']
-    # Отримайте URL обробленого зображення
-    fileurl = result["secure_url"]
-
-    # image = await repository_images.create_image(db=db, fileurl=fileurl, public_id=public_id, description='', user_id=current_user.id)
-
-    user = db.query(User).filter_by(id=current_user.id).first()
-    if not user:
-        raise Exception("User not found")
-
-    image = Image(fileurl=fileurl, public_id=public_id, user_id=current_user.id)
-    db.add(image)
-    db.commit()
-    db.refresh(image)
-    
-    return image
+# @router.patch('/transformations_upload_image')
+# async def upload_image(file: UploadFile = File(), current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
+#     cloudinary.config(
+#         cloud_name=settings.cloudinary_name,
+#         api_key=settings.cloudinary_api_key,
+#         api_secret=settings.cloudinary_api_secret,
+#         secure=True
+#     )
+#     # result = cloudinary.uploader.upload(file.file)
+#     result = upload(file.file)
+#     # Отримуємо public ID завантаженого зображення
+#     public_id = result['public_id']
+#     # Отримайте URL обробленого зображення
+#     fileurl = result["secure_url"]
+#
+#     # image = await repository_images.create_image(db=db, fileurl=fileurl, public_id=public_id, description='', user_id=current_user.id)
+#
+#     user = db.query(User).filter_by(id=current_user.id).first()
+#     if not user:
+#         raise Exception("User not found")
+#
+#     image = Image(fileurl=fileurl, public_id=public_id, user_id=current_user.id)
+#     db.add(image)
+#     db.commit()
+#     db.refresh(image)
+#
+#     return image
 
 @router.patch('/transformations_grayscale/{image_id}')
 async def transformations_grayscale(image_id: int, current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):

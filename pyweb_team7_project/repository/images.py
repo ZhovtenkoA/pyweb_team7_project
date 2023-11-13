@@ -46,10 +46,11 @@ from pyweb_team7_project.conf.config import settings
 
 async def create_image_and_upload_to_cloudinary(db: Session, file, description: str, user_id: int, tag_names: list = None) -> Image:
     user = db.query(User).filter_by(id=user_id).first()
+
     if not user:
         raise Exception("User not found")
 
-    image = Image(description=description, user_id=user_id)
+    image = Image(description=description, user_id=user_id, file_url='cloudinary')
 
     cloudinary.config(
         cloud_name=settings.cloudinary_name,

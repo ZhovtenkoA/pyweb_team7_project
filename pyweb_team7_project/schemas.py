@@ -47,7 +47,7 @@ class ImageResponse(BaseModel):
     file_url: str
     description: str
     user_id: int
-    tags: List[str]  # Assuming Tag has a 'name' attribute
+    # tags: List[str]
 
     class Config:
         orm_mode = True

@@ -94,7 +94,7 @@ def healthchecher(db: Session = Depends(get_db)):
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(images.router, prefix='/api')
-app.include_router(transformations.router, prefix='/api')
+# app.include_router(transformations.router, prefix='/api')
 
 if __name__ == '__main__':
     uvicorn.run(app="main:app", reload=True)
