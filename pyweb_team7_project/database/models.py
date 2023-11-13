@@ -22,7 +22,7 @@ class Image(Base):
     
     id = Column(Integer, primary_key=True)
     # filename = Column(String(250), unique=True, nullable=False)
-    fileurl = Column(String(250), unique=True, nullable=False)
+    file_url = Column(String(250), unique=True, nullable=False)
     public_id = Column(String(100), unique=True, nullable=False)
     description = Column(String(250), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))

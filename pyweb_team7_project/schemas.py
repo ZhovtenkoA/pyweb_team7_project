@@ -34,7 +34,6 @@ class EmailSchema(BaseModel):
 
 
 class CreateImageModel(BaseModel):
-    filename: str
     description: str
     tag_names: List[str] = []
 
@@ -45,7 +44,7 @@ class UpdateImageModel(BaseModel):
 
 class ImageResponse(BaseModel):
     id: int
-    filename: str
+    file_url: str
     description: str
     user_id: int
     tags: List[str]  # Assuming Tag has a 'name' attribute
