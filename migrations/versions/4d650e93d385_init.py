@@ -1,8 +1,8 @@
-"""Add_models
+"""Init
 
-Revision ID: a8f71d517441
-Revises: 72b38f9429b4
-Create Date: 2023-11-09 15:38:06.117868
+Revision ID: 4d650e93d385
+Revises: 
+Create Date: 2023-11-13 12:10:53.671763
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a8f71d517441'
-down_revision: Union[str, None] = '72b38f9429b4'
+revision: str = '4d650e93d385'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -26,14 +26,28 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_table('users',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('username', sa.String(length=50), nullable=False),
+    sa.Column('email', sa.String(length=250), nullable=False),
+    sa.Column('password', sa.String(length=250), nullable=False),
+    sa.Column('avatar', sa.String(length=250), nullable=True),
+    sa.Column('refresh_token', sa.String(length=250), nullable=True),
+    sa.Column('confirmed', sa.Boolean(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('username')
+    )
     op.create_table('images',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('filename', sa.String(length=250), nullable=False),
+    sa.Column('fileurl', sa.String(length=250), nullable=False),
+    sa.Column('public_id', sa.String(length=100), nullable=False),
     sa.Column('description', sa.String(length=250), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('filename')
+    sa.UniqueConstraint('fileurl'),
+    sa.UniqueConstraint('public_id')
     )
     op.create_table('comments',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -61,5 +75,6 @@ def downgrade() -> None:
     op.drop_table('image_tags')
     op.drop_table('comments')
     op.drop_table('images')
+    op.drop_table('users')
     op.drop_table('tags')
     # ### end Alembic commands ###

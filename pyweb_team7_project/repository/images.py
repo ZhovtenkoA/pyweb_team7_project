@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from pyweb_team7_project.database.models import User, Image, Tag
 
 
-async def create_image(db: Session, filename: str, description: str, user_id: int, tag_names: list = None) -> Image:
+async def create_image(db: Session, fileurl: str, public_id: str, description: str, user_id: int, tag_names: list = None) -> Image:
     """
     The create_image function creates a new image in the database.
         Args:
@@ -27,7 +27,7 @@ async def create_image(db: Session, filename: str, description: str, user_id: in
     if not user:
         raise Exception("User not found")
 
-    image = Image(filename=filename, description=description, user_id=user_id)
+    image = Image(fileurl=fileurl, public_id=public_id, description=description, user_id=user_id)
     if tag_names:
         for tag_name in tag_names:
             tag = db.query(Tag).filter_by(name=tag_name).first()

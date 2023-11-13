@@ -11,7 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from pyweb_team7_project.routes import auth, transformations, images
-# from pyweb_team7_project.routes import auth, images
 from pyweb_team7_project.database.db import get_db
 
 app = FastAPI()
