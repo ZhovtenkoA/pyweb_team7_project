@@ -3,9 +3,7 @@ import redis.asyncio as redis
 import uvicorn
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-
 from fastapi import FastAPI, Request, Depends, HTTPException, status
-
 from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 
