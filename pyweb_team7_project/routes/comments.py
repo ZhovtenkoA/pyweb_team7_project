@@ -63,7 +63,7 @@ async def remove_comment(comment_id: int, db: Session = Depends(get_db),
 
 @router.put("/{comment_id}", response_model=CommentResponseModel)
 async def update_comment(comment_id: int, body: CommentUpdateModel, db: Session = Depends(get_db),
-                     user: User = Depends(auth_service.get_current_user)):
+                         user: User = Depends(auth_service.get_current_user)):
     comment_db = await comments_repo.get_comment_by_id(comment_id=comment_id, db=db)
     if comment_db is None:
         raise HTTPException(
