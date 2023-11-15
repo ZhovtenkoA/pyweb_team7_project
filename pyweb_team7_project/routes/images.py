@@ -83,7 +83,7 @@ async def transformations_grayscale(image_id: int, current_user: User = Depends(
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image
@@ -108,7 +108,7 @@ async def transformations_auto_color(image_id: int, current_user: User = Depends
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image
@@ -133,7 +133,7 @@ async def transformations_sepia(image_id: int, current_user: User = Depends(auth
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image
@@ -183,7 +183,7 @@ async def transformations_brown_outline(image_id: int, current_user: User = Depe
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image

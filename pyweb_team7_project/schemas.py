@@ -74,7 +74,6 @@ class CommentResponseModel(BaseModel):
     edited_at: datetime
 
 
-
 class CreateImageModel(BaseModel):
     description: str
     tag_names: List[str] = []
