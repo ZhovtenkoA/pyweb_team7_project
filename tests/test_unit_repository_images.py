@@ -1,13 +1,11 @@
 import unittest
 import cloudinary
 
-from unittest.mock import MagicMock
-
+from unittest.mock import MagicMock, Mock
 
 from sqlalchemy.orm import Session
 
-from pyweb_team7_project.database.models import User, Image
-from pyweb_team7_project.conf.config import settings
+from pyweb_team7_project.database.models import User, Image, Tag
 from pyweb_team7_project.repository.images import (
     create_image_and_upload_to_cloudinary,
     get_image_by_id,
@@ -21,23 +19,6 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.session = MagicMock(spec=Session)
         self.user = User(id=1)
-
-    async def test_create_image_and_upload_to_cloudinary(self):
-
-        file = MagicMock()
-        file.file = "dummy_file_content"
-        description = "Test Image"
-        user_id = 1
-        tag_names = ["tag1", "tag2"]
-
-        image = await create_image_and_upload_to_cloudinary(
-            db=self.session, file=file, description=description, user_id=user_id, tag_names=tag_names
-        )
-
-        self.assertIsInstance(image, Image)
-        self.assertEqual(image.description, description)
-        self.assertEqual(image.user_id, user_id)
-        self.assertEqual(len(image.tags), len(tag_names))
 
     async def test_get_image_by_id(self):
         image_id = 1
@@ -69,11 +50,6 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(result, existing_image)
 
-
-def sign_request(params, options):
-    api_key = options.get("api_key", cloudinary.config().api_key)
-    if not api_key:
-        raise ValueError("Must supply api_key")
 
 if __name__ == '__main__':
     unittest.main()

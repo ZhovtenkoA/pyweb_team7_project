@@ -14,16 +14,6 @@ from pyweb_team7_project.conf.config import settings
 router = APIRouter(prefix='/images', tags=['images'])
 
 
-# @router.post("/", response_model=ImageResponse, status_code=status.HTTP_201_CREATED,
-#              dependencies=[Depends(RateLimiter(times=2, seconds=5))])
-# async def create_image(body: CreateImageModel,
-#                        file: UploadFile = File(),
-#                        current_user: User = Depends(auth_service.get_current_user),
-#                        db: Session = Depends(get_db)):
-#     return await repository_images.create_image_and_upload_to_cloudinary(db, file, description=body.description,
-#                                                                          user_id=current_user.id,
-#                                                                          tag_names=body.tag_names)
-
 @router.post("/", response_model=ImageResponse, status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(RateLimiter(times=2, seconds=5))])
 async def create_image(
@@ -36,6 +26,7 @@ async def create_image(
     return await repository_images.create_image_and_upload_to_cloudinary(db, file, description=description,
                                                                          user_id=current_user.id,
                                                                          tag_names=tag_names)
+
 
 @router.get("/{image_id}", response_model=ImageResponse, dependencies=[Depends(RateLimiter(times=2, seconds=5))])
 async def get_image(image_id: int, current_user: User = Depends(auth_service.get_current_user),
