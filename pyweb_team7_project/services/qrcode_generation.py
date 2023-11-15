@@ -7,6 +7,14 @@ from ..services.cloudinary import UploadService
 
 
 async def get_qrcode_image_url(qr_data, folder_name):
+        """
+    The get_qrcode_image_url function generates a QR code image from the given qr_data and uploads it to Cloudinary.
+    It returns the URL of the uploaded image.
+
+    :param qr_data: Generate the qr code
+    :param folder_name: Specify the folder in which the qr code will be stored
+    :return: A string with the url of the qr code image
+    """
     cloud_url = ""
 
     if qr_data:

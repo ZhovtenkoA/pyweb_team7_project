@@ -121,6 +121,14 @@ async def update_image_description(user: User, db: Session, image_id: int, new_d
 
 
 async def update_image_qrcode_url(image: Image, db: Session, new_qrcode_url: str):
+    """
+    The update_image_qrcode_url function updates the qrcode_url of an image in the database.
+
+    :param image: Image: Pass in the image object
+    :param db: Session: Pass the database session to the function
+    :param new_qrcode_url: str: Update the qrcode_url of an image
+    :return: An image object
+    """
     if image:
         # image.qrcode_url = new_qrcode_url
         image.file_url = new_qrcode_url

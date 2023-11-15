@@ -25,7 +25,7 @@ class Image(Base):
     file_url = Column(String(250),  nullable=True)
     public_id = Column(String(100), nullable=True)
     description = Column(String(250), nullable=True)
-    qrcode_url = Column(String(250), nullable=True)
+    # qrcode_url = Column(String(250), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", backref="images")
     tags = relationship("Tag", secondary="image_tags")
