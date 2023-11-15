@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: 4d650e93d385
+Revision ID: 1f044b17b050
 Revises: 
-Create Date: 2023-11-13 12:10:53.671763
+Create Date: 2023-11-14 19:48:36.045061
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '4d650e93d385'
+revision: str = '1f044b17b050'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,14 +40,12 @@ def upgrade() -> None:
     )
     op.create_table('images',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('fileurl', sa.String(length=250), nullable=False),
-    sa.Column('public_id', sa.String(length=100), nullable=False),
+    sa.Column('file_url', sa.String(length=250), nullable=True),
+    sa.Column('public_id', sa.String(length=100), nullable=True),
     sa.Column('description', sa.String(length=250), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('fileurl'),
-    sa.UniqueConstraint('public_id')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('comments',
     sa.Column('id', sa.Integer(), nullable=False),
