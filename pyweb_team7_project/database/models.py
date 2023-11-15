@@ -21,14 +21,28 @@ class Image(Base):
     __tablename__ = "images"
 
     id = Column(Integer, primary_key=True)
-    # filename = Column(String(250), unique=True, nullable=False)
-    file_url = Column(String(250),  nullable=True)
+    file_url = Column(String(250), nullable=True)
     public_id = Column(String(100), nullable=True)
     description = Column(String(250), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", backref="images")
     tags = relationship("Tag", secondary="image_tags")
+    qr_code = relationship("QR_code",secondary="qr_images")
 
+
+class QR_code(Base):
+    __tablename__ = "qr_codes"
+
+    id = Column(Integer, primary_key=True)
+    url = Column(String(250), nullable=False)
+    photo_id = Column(Integer, ForeignKey("images.id"))
+    
+
+class QRImage(Base):  # связующая таблица между тегами и изображениями
+    __tablename__ = "qr_images"
+
+    image_id = Column(Integer, ForeignKey("images.id"), primary_key=True)
+    qr_id = Column(Integer, ForeignKey("qr_codes.id"), primary_key=True)
 
 class Tag(Base):
     __tablename__ = "tags"

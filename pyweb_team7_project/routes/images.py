@@ -28,16 +28,18 @@ router = APIRouter(prefix='/images', tags=['images'])
 
 @router.post("/", response_model=ImageResponse, status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(RateLimiter(times=2, seconds=5))])
-async def create_image(
-        description: str = Form(),
-        tag_names: List[str] = Form([]),
-        file: UploadFile = File(),
-        current_user: User = Depends(auth_service.get_current_user),
-        db: Session = Depends(get_db)
-):
-    return await repository_images.create_image_and_upload_to_cloudinary(db, file, description=description,
+async def create_image(description: str = Form(),tags: str = Form(...),file: UploadFile = File(),current_user: User = Depends(auth_service.get_current_user),db: Session = Depends(get_db)):
+    tag_list = tags.split(", ")
+    if len(tag_list) > 5:
+        raise HTTPException(status_code=400, detail="You can't add more than 5 tags to a photo.")
+    for tag in tag_list:
+        if len(tag) > 25:
+            raise HTTPException(status_code=400,detail="Tag name should be no more than 25 characters long.",)
+    image = await repository_images.create_image_and_upload_to_cloudinary(db, file, description=description,
                                                                          user_id=current_user.id,
-                                                                         tag_names=tag_names)
+                                                                         tag_names=tag_list)
+
+    return image
 
 
 @router.get("/{image_id}", response_model=ImageResponse, dependencies=[Depends(RateLimiter(times=2, seconds=5))])
@@ -190,3 +192,11 @@ async def transformations_brown_outline(image_id: int, current_user: User = Depe
     db.commit()
     db.refresh(image)
     return image
+
+@router.post('/qr_code/')
+async def get_qr_code(image_id: int, current_user: User = Depends(auth_service.get_current_user),
+                                        db: Session = Depends(get_db)):
+    qr_url = await repository_images.get_QR(image_id, db)
+    if qr_url is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found, can't get QR")
+    return qr_url
