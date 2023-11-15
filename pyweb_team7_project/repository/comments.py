@@ -41,7 +41,7 @@ async def get_all_image_comments(image_id: int, skip: int, limit: int, db: Sessi
     :param db: Session: Pass the database session to the function
     :return: A list of comments for a given image id
     """
-    return db.query(Comment).filter(Image.id == image_id).offset(skip).limit(limit).all()
+    return db.query(Comment).filter(Comment.image_id == image_id).offset(skip).limit(limit).all()
 
 
 async def create_comment(body: CommentRequestModel, user: User, image_db: Image,
