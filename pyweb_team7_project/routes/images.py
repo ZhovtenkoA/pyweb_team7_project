@@ -52,7 +52,7 @@ async def get_image(image_id: int, current_user: User = Depends(auth_service.get
 @router.put("/{image_id}", response_model=ImageResponse)
 async def update_image(body: UpdateImageModel, image_id: int,
                        current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
-    image = await repository_images.update_image_description(current_user, db, image_id, body.description)
+    image = await repository_images.update_image_description(current_user, db, image_id, body.new_description)
     if image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
     return image
