@@ -10,42 +10,6 @@ from sqlalchemy.future import select
 import os
 import qrcode
 import cloudinary
-# async def create_image(db: Session, fileurl: str, public_id: str, description: str, user_id: int, tag_names: list = None) -> Image:
-#     """
-#     The create_image function creates a new image in the database.
-#         Args:
-#             db (Session): The database session to use for this operation.
-#             filename (str): The name of the file that contains the image data. This is not stored in the DB, but used by
-#              our application to locate and load images from disk when requested by clients.
-#             description (str): A short description of what's contained within this image, such as &quot;A picture of my
-#             dog&quot; or &quot;The view from my window&quot;. This will be displayed on our web app so users can see what
-#             an image is about before they click on it to
-#
-#     :param db: Session: Access the database
-#     :param filename: str: Store the filename of the image
-#     :param description: str: Store the description of the image
-#     :param user_id: int: Specify the user who created the image
-#     :param tag_names: list: Pass in a list of tag names to be added to the image
-#     :return: An image object
-#     :doc-author: Trelent
-#     """
-#     user = db.query(User).filter_by(id=user_id).first()
-#     if not user:
-#         raise Exception("User not found")
-#
-#     image = Image(fileurl=fileurl, public_id=public_id, description=description, user_id=user_id)
-#     if tag_names:
-#         for tag_name in tag_names:
-#             tag = db.query(Tag).filter_by(name=tag_name).first()
-#             if not tag:
-#                 tag = Tag(name=tag_name)
-#             image.tags.append(tag)
-#
-#         db.add(image)
-#         db.commit()
-#         db.refresh(image)
-#         return image
-
 
 async def create_image_and_upload_to_cloudinary(db: Session, file, description: str, user_id: int, tag_names: list = None) -> Image:
     user = db.query(User).filter_by(id=user_id).first()
