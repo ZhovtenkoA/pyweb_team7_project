@@ -5,7 +5,7 @@ from pyweb_team7_project.database.models import User
 from pyweb_team7_project.schemas import UserModel
 
 
-async def get_user_by_email(email: str, db: Session) -> User:
+async def get_user_by_email(email: str, db: Session) -> User | None:
     """
     The get_user_by_email function takes in an email and a database session,
     then returns the user with that email.
@@ -36,7 +36,7 @@ async def create_user(body: UserModel, db: Session) -> User:
         avatar = g.get_image()
     except Exception as e:
         print(e)
-    new_user = User(**body.dict(), avatar=avatar)
+    new_user = User(**body.model_dump(), avatar=avatar)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

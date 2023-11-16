@@ -1,8 +1,16 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, func
-from sqlalchemy.orm import declarative_base, relationship
+import enum
+
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, func, Enum
+from sqlalchemy.orm import declarative_base, relationship, Mapped
 from sqlalchemy.sql.sqltypes import DateTime
 
 Base = declarative_base()
+
+
+class Role(enum.Enum):
+    admin: str = "admin"
+    moderator: str = "moderator"
+    user: str = "user"
 
 
 class User(Base):
@@ -13,8 +21,10 @@ class User(Base):
     email = Column(String(250), unique=True, nullable=False)
     password = Column(String(250), nullable=False)
     avatar = Column(String(250), nullable=True)
+    access_token = Column(String(250), nullable=True)
     refresh_token = Column(String(250), nullable=True)
     confirmed = Column(Boolean, default=False)
+    role: Mapped[Enum] = Column('role', Enum(Role), default=Role.admin)
 
 
 class Image(Base):
@@ -27,7 +37,7 @@ class Image(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", backref="images")
     tags = relationship("Tag", secondary="image_tags")
-    qr_code = relationship("QR_code",secondary="qr_images")
+    qr_code = relationship("QR_code", secondary="qr_images")
 
 
 class QR_code(Base):
@@ -36,13 +46,14 @@ class QR_code(Base):
     id = Column(Integer, primary_key=True)
     url = Column(String(250), nullable=False)
     photo_id = Column(Integer, ForeignKey("images.id"))
-    
+
 
 class QRImage(Base):  # связующая таблица между тегами и изображениями
     __tablename__ = "qr_images"
 
     image_id = Column(Integer, ForeignKey("images.id"), primary_key=True)
     qr_id = Column(Integer, ForeignKey("qr_codes.id"), primary_key=True)
+
 
 class Tag(Base):
     __tablename__ = "tags"

@@ -6,7 +6,7 @@ from pyweb_team7_project.database.models import Comment, User, Image
 from pyweb_team7_project.schemas import CommentResponseModel, CommentRequestModel
 
 
-async def get_comment_by_id(comment_id: int, db: Session) -> Comment:
+async def get_comment_by_id(comment_id: int, db: Session) -> Comment | None:
     """
     The get_comment_by_id function takes a comment_id and db as parameters.
     It returns the first Comment object in the database that matches the given comment_id.
@@ -18,7 +18,7 @@ async def get_comment_by_id(comment_id: int, db: Session) -> Comment:
     return db.query(Comment).filter(Comment.id == comment_id).first()
 
 
-async def get_image_by_id(image_id: int, db: Session) -> Image:
+async def get_image_by_id(image_id: int, db: Session) -> Image | None:
     """
     The get_image_by_id function takes in an image_id and a db Session object.
     It then queries the database for the Image with that id, and returns it.
