@@ -16,16 +16,6 @@ from ..services.auth import auth_service
 router = APIRouter(prefix='/images', tags=['images'])
 
 
-# @router.post("/", response_model=ImageResponse, status_code=status.HTTP_201_CREATED,
-#              dependencies=[Depends(RateLimiter(times=2, seconds=5))])
-# async def create_image(body: CreateImageModel,
-#                        file: UploadFile = File(),
-#                        current_user: User = Depends(auth_service.get_current_user),
-#                        db: Session = Depends(get_db)):
-#     return await repository_images.create_image_and_upload_to_cloudinary(db, file, description=body.description,
-#                                                                          user_id=current_user.id,
-#                                                                          tag_names=body.tag_names)
-
 @router.post("/", response_model=ImageResponse, status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(RateLimiter(times=2, seconds=5))])
 async def create_image(description: str = Form(),tags: str = Form(...),file: UploadFile = File(),current_user: User = Depends(auth_service.get_current_user),db: Session = Depends(get_db)):
@@ -40,6 +30,7 @@ async def create_image(description: str = Form(),tags: str = Form(...),file: Upl
                                                                          tag_names=tag_list)
 
     return image
+
 
 
 @router.get("/{image_id}", response_model=ImageResponse, dependencies=[Depends(RateLimiter(times=2, seconds=5))])
@@ -88,7 +79,7 @@ async def transformations_grayscale(image_id: int, current_user: User = Depends(
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image
@@ -113,7 +104,7 @@ async def transformations_auto_color(image_id: int, current_user: User = Depends
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image
@@ -138,7 +129,7 @@ async def transformations_sepia(image_id: int, current_user: User = Depends(auth
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image
@@ -188,7 +179,7 @@ async def transformations_brown_outline(image_id: int, current_user: User = Depe
     url_end = transformed_url.find("\"", url_start)
     image_url = transformed_url[url_start:url_end]
 
-    image.fileurl = image_url
+    image.file_url = image_url
     db.commit()
     db.refresh(image)
     return image
