@@ -14,22 +14,25 @@ from ..schemas import UpdateImageModel, ImageResponse
 from ..services.auth import auth_service
 
 from pyweb_team7_project.services.roles import RoleAccess
+from pyweb_team7_project.services.roles import admin_moderator, admin, free_access, admin_user
 
 access_to_images = RoleAccess([Role.admin])
 
-router = APIRouter(prefix='/images', tags=['images'])
+router = APIRouter(prefix='/images', tags=['Images'])
 
 
 @router.post("/", response_model=ImageResponse, status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(RateLimiter(times=2, seconds=5)), Depends(access_to_images)])
-async def create_image(description: str = Form(), tags: str = Form(...), file: UploadFile = File(),
+             dependencies=[Depends(RateLimiter(times=2, seconds=5)), Depends(free_access)])
+async def create_image(description: str = Form(), tags: str = Form(default=""), file: UploadFile = File(),
                        current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
-    tag_list = tags.split(", ")
-    if len(tag_list) > 5:
-        raise HTTPException(status_code=400, detail="You can't add more than 5 tags to a photo.")
-    for tag in tag_list:
-        if len(tag) > 25:
-            raise HTTPException(status_code=400, detail="Tag name should be no more than 25 characters long.")
+    tag_list = []
+    if tags:
+        tag_list = tags.split(", ")
+        if len(tag_list) > 5:
+            raise HTTPException(status_code=400, detail="You can't add more than 5 tags to a photo.")
+        for tag in tag_list:
+            if len(tag) > 25:
+                raise HTTPException(status_code=400, detail="Tag name should be no more than 25 characters long.")
     image = await repository_images.create_image_and_upload_to_cloudinary(db, file, description=description,
                                                                           user_id=current_user.id,
                                                                           tag_names=tag_list)
@@ -39,7 +42,7 @@ async def create_image(description: str = Form(), tags: str = Form(...), file: U
 
 
 @router.get("/{image_id}", response_model=ImageResponse, dependencies=[Depends(RateLimiter(times=2, seconds=5)),
-                                                                       Depends(access_to_images)])
+                                                                       Depends(free_access)])
 async def get_image(image_id: int, current_user: User = Depends(auth_service.get_current_user),
                     db: Session = Depends(get_db)):
     image = await repository_images.get_image_by_id(current_user, db, image_id)
@@ -47,23 +50,40 @@ async def get_image(image_id: int, current_user: User = Depends(auth_service.get
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
     return image
 
+@router.get("/", response_model=List[ImageResponse], dependencies=[Depends(RateLimiter(times=2, seconds=5)),
+                                                                       Depends(free_access)])
+async def get_all_images(db: Session = Depends(get_db)):
+    images = await repository_images.get_all_images(db)
+    return images
 
-@router.put("/{image_id}", response_model=ImageResponse, dependencies=[Depends(access_to_images)])
+
+@router.put("/{image_id}", response_model=ImageResponse, dependencies=[Depends(admin_user)])
 async def update_image(body: UpdateImageModel, image_id: int,
                        current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
-    image = await repository_images.update_image_description(current_user, db, image_id, body.new_description)
+    image = await repository_images.get_image_by_id(user=current_user, image_id=int(image_id), db=db)
+    if image:
+        if current_user.id != image.user_id and current_user.role != Role.admin:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        image = await repository_images.update_image_description(current_user, db, image_id, body.new_description)
     if image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
     return image
 
 
-@router.delete("/{image_id}", response_model=ImageResponse, dependencies=[Depends(access_to_images)])
+@router.delete("/{image_id}", response_model=None, dependencies=[Depends(admin_user)])
 async def delete_image(image_id: int, current_user: User = Depends(auth_service.get_current_user),
                        db: Session = Depends(get_db)):
-    image = await repository_images.delete_image(current_user, db, image_id)
-    if image is None:
+    #image: Image = Depends(repository_images.get_image_by_id(user = current_user, image_id= int(image_id), db = db))
+    image = await repository_images.get_image_by_id(user=current_user, image_id=int(image_id), db=db)
+    if image:
+        if current_user.id != image.user_id and current_user.role != Role.admin:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        image = await repository_images.delete_image(current_user, db, image_id)
+        return image
+    else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
-    return image
+    
+    
 
 
 @router.patch('/transformations_grayscale/{image_id}')

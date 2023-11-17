@@ -13,7 +13,7 @@ from pyweb_team7_project.repository import users as repository_users
 from pyweb_team7_project.services.auth import auth_service
 from pyweb_team7_project.services.email import send_email
 
-router = APIRouter(prefix='/auth')
+router = APIRouter(prefix='/auth', tags=["Authorization"])
 security = HTTPBearer()
 SECRET_KEY = "secret_key"
 ALGORITHM = "HS256"
