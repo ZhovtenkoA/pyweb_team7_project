@@ -21,6 +21,7 @@ conf = ConnectionConfig(
     TEMPLATE_FOLDER=Path(__file__).parent.parent / 'templates',
 )
 
+
 async def send_email(email: EmailStr, username: str, host: str):
     """
     The send_email function sends an email to the user with a link to confirm their email address.

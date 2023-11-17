@@ -1,10 +1,11 @@
 from libgravatar import Gravatar
 from sqlalchemy.orm import Session
 
-from pyweb_team7_project.database.models import User
+from pyweb_team7_project.database.models import User, Role
 from pyweb_team7_project.schemas import UserModel
+from sqlalchemy import func
 
-async def get_user_by_email(email: str, db: Session,) -> User:
+async def get_user_by_email(email: str, db: Session) -> User | None:
     """
     The get_user_by_email function takes in an email and a database session,
     then returns the user with that email.
@@ -14,6 +15,7 @@ async def get_user_by_email(email: str, db: Session,) -> User:
     :return: The first user found with the email specified
     """
     return db.query(User).filter(User.email == email).first()
+
 
 async def create_user(body: UserModel, db: Session) -> User:
     """
@@ -34,11 +36,22 @@ async def create_user(body: UserModel, db: Session) -> User:
         avatar = g.get_image()
     except Exception as e:
         print(e)
-    new_user = User(**body.dict(), avatar=avatar)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+
+    new_user = User(**body.model_dump(), avatar=avatar)
+    new_user.role = Role.user
+
+    users_count = db.query(func.count(User.id)).scalar()
+
+    if users_count == 0:
+        new_user.role = Role.admin
+    try:    
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+    except Exception as e:
+        db.rollback()
+        raise e
 
 
 async def update_token(user: User, token: str | None, db: Session) -> None:
@@ -53,6 +66,7 @@ async def update_token(user: User, token: str | None, db: Session) -> None:
     user.refresh_token = token
     db.commit()
 
+
 async def confirmed_email(email: str, db: Session) -> None:
     """
     The confirmed_email function sets the confirmed field of a user to True.
@@ -64,4 +78,37 @@ async def confirmed_email(email: str, db: Session) -> None:
     user = await get_user_by_email(email, db)
     user.confirmed = True
     db.commit()
+
+async def get_users(skip: int, limit: int, db: Session) -> list[User]:
+    """
+    The get_users function returns a list of all users from the database.
+
+    :param skip: int: Skip the first n records in the database
+    :param limit: int: Limit the number of results returned
+    :param db: Session: Pass the database session to the function
+    :return: A list of all users
+    """
+    query = db.query(User).offset(skip).limit(limit).all()
+    return query
+
+async def make_user_role(email: str, role: Role, db: Session) -> None:
+    """
+    The make_user_role function takes in an email and a role, and then updates the user's role to that new one.
+    Args:
+    email (str): The user's email address.
+    role (Role): The new Role for the user.
+
+    :param email: str: Get the user by email
+    :param role: Role: Set the role of the user
+    :param db: Session: Pass the database session to the function
+    :return: None
+    """
+    
+    user = await get_user_by_email(email, db)
+    user.role = role
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
     

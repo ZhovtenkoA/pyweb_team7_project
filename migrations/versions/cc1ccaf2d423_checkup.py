@@ -1,8 +1,8 @@
-"""Add_models
+"""checkup
 
-Revision ID: a8f71d517441
-Revises: 72b38f9429b4
-Create Date: 2023-11-09 15:38:06.117868
+Revision ID: cc1ccaf2d423
+Revises: 
+Create Date: 2023-11-15 13:10:29.743403
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a8f71d517441'
-down_revision: Union[str, None] = '72b38f9429b4'
+revision: str = 'cc1ccaf2d423'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -26,20 +26,32 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_table('users',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('username', sa.String(length=50), nullable=False),
+    sa.Column('email', sa.String(length=250), nullable=False),
+    sa.Column('password', sa.String(length=250), nullable=False),
+    sa.Column('avatar', sa.String(length=250), nullable=True),
+    sa.Column('refresh_token', sa.String(length=250), nullable=True),
+    sa.Column('confirmed', sa.Boolean(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('username')
+    )
     op.create_table('images',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('filename', sa.String(length=250), nullable=False),
+    sa.Column('file_url', sa.String(length=250), nullable=True),
+    sa.Column('public_id', sa.String(length=100), nullable=True),
     sa.Column('description', sa.String(length=250), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('filename')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('comments',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('content', sa.String(length=250), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('edited_at', sa.DateTime(), nullable=True),
+    sa.Column('edited_at', sa.DateTime(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('image_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['image_id'], ['images.id'], ),
@@ -61,5 +73,6 @@ def downgrade() -> None:
     op.drop_table('image_tags')
     op.drop_table('comments')
     op.drop_table('images')
+    op.drop_table('users')
     op.drop_table('tags')
     # ### end Alembic commands ###

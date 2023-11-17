@@ -7,7 +7,7 @@ from pyweb_team7_project.database.db import get_db
 from pyweb_team7_project.schemas import TagModel, TagResponse
 from pyweb_team7_project.repository import tags as repository_tags
 
-router = APIRouter(prefix="/tags", tags=["tags"])
+router = APIRouter(prefix="/tags", tags=["Tags"])
 
 
 @router.get("/", response_model=List[TagResponse])

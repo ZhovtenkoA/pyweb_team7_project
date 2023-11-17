@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel, Field, EmailStr
+from pyweb_team7_project.database.models import Role
 
 
 class UserModel(BaseModel):
@@ -14,9 +16,9 @@ class UserDb(BaseModel):
     username: str
     email: str
     avatar: str
-
+    role: Role 
     class Config:
-        form_attributes = True
+        orm_mode = True
 
 
 class ResponseUser(BaseModel):
@@ -62,3 +64,32 @@ class CommentResponseModel(BaseModel):
     content: str = Field(max_length=250)
     created_at: datetime
     edited_at: datetime
+
+
+class CreateImageModel(BaseModel):
+    description: str
+    tag_names: List[str] = []
+
+
+class UpdateImageModel(BaseModel):
+    new_description: str
+
+
+class ImageResponse(BaseModel):
+    id: int
+    file_url: str
+    description: str
+    user_id: int
+
+    # tags: List[str]
+
+    class Config:
+        orm_mode = True
+
+
+class QRCodeRequestTest(BaseModel):
+    qr_data: str = Field("https://github.com/ZhovtenkoA/pyweb_team7_project", max_length=250)
+
+
+class QRCodeResponse(BaseModel):
+    qrcode_cloud_url: str = Field(max_length=250)

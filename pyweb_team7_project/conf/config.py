@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     cloudinary_api_key: int = 0
     cloudinary_api_secret: str = 'CLOUDINARY_API_SECRET'
     pythonpath: str = 'PYTHONPATH'
-    
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
