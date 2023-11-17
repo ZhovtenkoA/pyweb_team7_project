@@ -1163,7 +1163,6 @@ plugins = ["importlib-metadata"]
 name = "pypng"
 version = "0.20220715.0"
 description = "Pure Python library for saving and loading PNG images"
-category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -1301,7 +1300,6 @@ files = [
 name = "qrcode"
 version = "7.4.2"
 description = "QR Code image generator"
-category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1968,4 +1966,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "20d2fbc778ad02d35f01a087adead5209c36ee8134097522e5eaa59c8adc9816"
+content-hash = "894570ba6dfc8db2e10cf0229aea4cc360399c35ad7f4a07cc784dc19e679233"

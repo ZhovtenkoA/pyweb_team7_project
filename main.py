@@ -100,6 +100,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(tags.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(images.router, prefix='/api')
+app.include_router(qrcode_generation.router, prefix='/api')
 # app.include_router(transformations.router, prefix='/api')
 
 if __name__ == '__main__':
