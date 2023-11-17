@@ -4,45 +4,12 @@ from sqlalchemy.orm import Session
 import cloudinary
 from cloudinary.uploader import upload
 
-from pyweb_team7_project.database.models import User, Image, Tag
+from pyweb_team7_project.database.models import User, Image, Tag, QR_code
 from pyweb_team7_project.conf.config import settings
-
-# async def create_image(db: Session, fileurl: str, public_id: str, description: str, user_id: int, tag_names: list = None) -> Image:
-#     """
-#     The create_image function creates a new image in the database.
-#         Args:
-#             db (Session): The database session to use for this operation.
-#             filename (str): The name of the file that contains the image data. This is not stored in the DB, but used by
-#              our application to locate and load images from disk when requested by clients.
-#             description (str): A short description of what's contained within this image, such as &quot;A picture of my
-#             dog&quot; or &quot;The view from my window&quot;. This will be displayed on our web app so users can see what
-#             an image is about before they click on it to
-#
-#     :param db: Session: Access the database
-#     :param filename: str: Store the filename of the image
-#     :param description: str: Store the description of the image
-#     :param user_id: int: Specify the user who created the image
-#     :param tag_names: list: Pass in a list of tag names to be added to the image
-#     :return: An image object
-#     :doc-author: Trelent
-#     """
-#     user = db.query(User).filter_by(id=user_id).first()
-#     if not user:
-#         raise Exception("User not found")
-#
-#     image = Image(fileurl=fileurl, public_id=public_id, description=description, user_id=user_id)
-#     if tag_names:
-#         for tag_name in tag_names:
-#             tag = db.query(Tag).filter_by(name=tag_name).first()
-#             if not tag:
-#                 tag = Tag(name=tag_name)
-#             image.tags.append(tag)
-#
-#         db.add(image)
-#         db.commit()
-#         db.refresh(image)
-#         return image
-
+from sqlalchemy.future import select
+import os
+import qrcode
+import cloudinary
 
 async def create_image_and_upload_to_cloudinary(db: Session, file, description: str, user_id: int, tag_names: list = None) -> Image:
     user = db.query(User).filter_by(id=user_id).first()
@@ -156,3 +123,52 @@ async def delete_image(user: User, db: Session, image_id: int):
         db.delete(image)
         db.commit()
     return image
+
+async def get_QR(image_id: int, db: Session):
+    image = db.query(Image).filter(and_(Image.id == image_id)).first()
+    if image is None:
+        raise Exception("Image not found")
+    else:
+        qr = db.query(QR_code).filter(and_(QR_code.photo_id == image_id)).first()
+        print(qr)
+        if qr is None:
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            print('qr data')
+            qr.add_data(image.file_url)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            qr_code_file_path = "my_qr_code.png"
+            img.save(qr_code_file_path)
+
+            cloudinary.config(
+            cloud_name=settings.cloudinary_name,
+            api_key=settings.cloudinary_api_key,
+            api_secret=settings.cloudinary_api_secret,
+            secure=True)
+
+            upload_result = cloudinary.uploader.upload(
+                qr_code_file_path,
+                public_id=f"Qr_Code/Photo_{image_id}",
+                overwrite=True,
+                invalidate=True,
+            )
+            qr = QR_code(url=upload_result["secure_url"], photo_id=image_id)
+
+            try:
+                db.add(qr)
+                db.commit()
+                db.refresh(qr)
+            except Exception as e:
+                await db.rollback()
+                raise e
+
+            os.remove(qr_code_file_path)
+            return { "qr_code_url": qr.url}
+
+        return {"qr_code_url": qr}

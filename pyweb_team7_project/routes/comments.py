@@ -4,12 +4,16 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
 from pyweb_team7_project.database.db import get_db
-from pyweb_team7_project.database.models import User
+from pyweb_team7_project.database.models import User, Role
 from pyweb_team7_project.repository import comments as comments_repo
 from pyweb_team7_project.schemas import CommentResponseModel, CommentRequestModel, CommentUpdateModel
 from pyweb_team7_project.services.auth import auth_service
 
+from pyweb_team7_project.services.roles import RoleAccess
+
 router = APIRouter(prefix="/comments", tags=["comments"])
+
+access_to_comments = RoleAccess([Role.admin, Role.moderator])
 
 
 @router.get("/{comment_id}", response_model=CommentResponseModel)
@@ -45,7 +49,7 @@ async def create_comment(body: CommentRequestModel, user: User = Depends(auth_se
     return created_comment
 
 
-@router.delete("/{comment_id}", response_model=CommentResponseModel)
+@router.delete("/{comment_id}", response_model=CommentResponseModel, dependencies=[Depends(access_to_comments)])
 async def remove_comment(comment_id: int, db: Session = Depends(get_db),
                          user: User = Depends(auth_service.get_current_user)):
     comment_db = await comments_repo.get_comment_by_id(comment_id=comment_id, db=db)
@@ -63,13 +67,17 @@ async def remove_comment(comment_id: int, db: Session = Depends(get_db),
 
 @router.put("/{comment_id}", response_model=CommentResponseModel)
 async def update_comment(comment_id: int, body: CommentUpdateModel, db: Session = Depends(get_db),
-                     user: User = Depends(auth_service.get_current_user)):
+                         user: User = Depends(auth_service.get_current_user)):
     comment_db = await comments_repo.get_comment_by_id(comment_id=comment_id, db=db)
     if comment_db is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Comment with id={comment_id} does not exist!"
         )
+
+    if comment_db.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to edit this "
+                                                                          "comment")
 
     comment_db = await comments_repo.update_comment(comment_db, body, db)
 

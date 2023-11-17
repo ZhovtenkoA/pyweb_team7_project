@@ -1,7 +1,7 @@
 from typing import Optional
 
 from jose import JWTError, jwt
-from fastapi import HTTPException, status, Depends  
+from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from datetime import timedelta, datetime
@@ -11,12 +11,13 @@ from pyweb_team7_project.database.db import get_db
 from pyweb_team7_project.repository import users as repository_users
 from pyweb_team7_project.conf.config import settings
 
+
 class Auth:
     pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    
+
     def verify_password(self, plain_password, hashed_password):
         """
         The verify_password function takes a plain-text password and the hashed version of that password,
@@ -29,7 +30,7 @@ class Auth:
         :return: True if the password is correct, and false otherwise
         """
         return self.pwd_context.verify(plain_password, hashed_password)
-    
+
     def get_password_hash(self, password: str):
         """
         The get_password_hash function takes a password as input and returns the hash of that password.
@@ -40,7 +41,7 @@ class Auth:
         :return: A hash of the password
         """
         return self.pwd_context.hash(password)
-    
+
     async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
         """
         The create_access_token function creates a new access token for the user.
@@ -60,7 +61,7 @@ class Auth:
         encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         print(encoded_access_token)
         return encoded_access_token
-    
+
     async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
         """
         The create_refresh_token function creates a refresh token for the user.
@@ -81,7 +82,7 @@ class Auth:
         to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"})
         encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_refresh_token
-    
+
     async def decode_refresh_token(self, refresh_token: str):
         """
         The decode_refresh_token function takes a refresh token and decodes it.
@@ -101,7 +102,7 @@ class Auth:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid scope for token')
         except JWTError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
-        
+
     async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
         """
         The get_current_user function is a dependency that will be used in the protected routes.
@@ -127,12 +128,12 @@ class Auth:
                 raise credentials_exception
         except JWTError as e:
             raise credentials_exception
-        
+
         user = await repository_users.get_user_by_email(email, db)
         if user is None:
             raise credentials_exception
         return user
-    
+
     def create_email_token(self, data: dict):
         """
         The create_email_token function takes a dictionary of data and returns a JWT token.
@@ -168,5 +169,6 @@ class Auth:
             print(e)
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail="Invalid token for email verification")
-    
+
+
 auth_service = Auth()
