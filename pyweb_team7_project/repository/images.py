@@ -120,6 +120,9 @@ async def delete_image(user: User, db: Session, image_id: int):
     """
     image = db.query(Image).filter(and_(Image.id == image_id, Image.user_id == user.id)).first()
     if image:
+        # Delete corresponding qr_codes rows
+        db.query(QR_code).filter(QR_code.photo_id == image_id).delete()
+        
         db.delete(image)
         db.commit()
     return image
