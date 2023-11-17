@@ -14,3 +14,7 @@ class RoleAccess:
             if user.role not in self.allowed_roles:
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden operation")
 
+free_access = RoleAccess([Role.admin, Role.moderator, Role.user])
+admin_moderator = RoleAccess([Role.admin, Role.moderator])
+admin_user = RoleAccess([Role.admin, Role.user])
+admin = RoleAccess([Role.admin])

@@ -6,7 +6,7 @@ from cloudinary.uploader import upload
 
 from pyweb_team7_project.database.models import User, Image, Tag, QR_code
 from pyweb_team7_project.conf.config import settings
-from sqlalchemy.future import select
+
 import os
 import qrcode
 import cloudinary
@@ -60,9 +60,20 @@ async def get_image_by_id(user: User, db: Session, image_id: int):
     :return: The image object that matches the user and image id
     :doc-author: Trelent
     """
-    image = db.query(Image).filter(and_(Image.id == image_id, Image.user_id == user.id)).first()
+    image = db.query(Image).filter(and_(Image.id == image_id, 
+                                        #Image.user_id == user.id
+                                        )).first()
     return image
 
+async def get_all_images(db: Session):
+    """
+    The get_all_images function takes in a database session and retrieves all images.
+
+    :param db: Session: Pass the database session to the function
+    :return: A list of all image objects
+    """
+    images = db.query(Image).all()
+    return images
 
 async def update_image_description(user: User, db: Session, image_id: int, new_description: str):
     """
@@ -80,7 +91,9 @@ async def update_image_description(user: User, db: Session, image_id: int, new_d
     :return: The image object, which is then used to update the description
     :doc-author: Trelent
     """
-    image = db.query(Image).filter(and_(Image.id == image_id, Image.user_id == user.id)).first()
+    image = db.query(Image).filter(and_(Image.id == image_id, 
+                                        #Image.user_id == user.id
+                                        )).first()
     if image:
         image.description = new_description
         db.commit()
@@ -119,13 +132,14 @@ async def delete_image(user: User, db: Session, image_id: int):
     :doc-author: Trelent
     """
     image = db.query(Image).filter(and_(Image.id == image_id, Image.user_id == user.id)).first()
+    if not image:
+        return False, {"message": "image not found"}
     if image:
         # Delete corresponding qr_codes rows
         db.query(QR_code).filter(QR_code.photo_id == image_id).delete()
-        
         db.delete(image)
         db.commit()
-    return image
+    return image, {"message": "image was deleted"}
 
 async def get_QR(image_id: int, db: Session):
     image = db.query(Image).filter(and_(Image.id == image_id)).first()

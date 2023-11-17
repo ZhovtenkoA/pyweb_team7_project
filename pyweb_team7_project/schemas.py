@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel, Field, EmailStr
+from pyweb_team7_project.database.models import Role
 
 
 class UserModel(BaseModel):
@@ -15,9 +16,9 @@ class UserDb(BaseModel):
     username: str
     email: str
     avatar: str
-
+    role: Role 
     class Config:
-        form_attributes = True
+        orm_mode = True
 
 
 class ResponseUser(BaseModel):

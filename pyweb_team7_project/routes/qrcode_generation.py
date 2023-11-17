@@ -9,7 +9,7 @@ from ..schemas import QRCodeResponse, QRCodeRequestTest, ImageResponse
 from ..services.auth import auth_service
 from ..services.qrcode_generation import get_qrcode_image_url
 
-router = APIRouter(prefix="/qrcode", tags=["qrcode"])
+router = APIRouter(prefix="/qrcode", tags=["QRCode"])
 
 
 @router.post("/test", response_model=QRCodeResponse, status_code=status.HTTP_201_CREATED)
