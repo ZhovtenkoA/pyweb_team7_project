@@ -47,7 +47,7 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
         self.session.query().filter().first.return_value = existing_image
 
         result = await delete_image(user=self.user, db=self.session, image_id=image_id)
-
+        print(result, existing_image)
         self.assertEqual(result, existing_image)
 
 

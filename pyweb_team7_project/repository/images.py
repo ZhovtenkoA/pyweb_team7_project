@@ -139,7 +139,8 @@ async def delete_image(user: User, db: Session, image_id: int):
         db.query(QR_code).filter(QR_code.photo_id == image_id).delete()
         db.delete(image)
         db.commit()
-    return image, {"message": "image was deleted"}
+        print("Image deleted")
+    return image
 
 async def get_QR(image_id: int, db: Session):
     image = db.query(Image).filter(and_(Image.id == image_id)).first()
