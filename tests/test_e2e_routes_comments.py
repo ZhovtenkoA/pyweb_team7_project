@@ -5,6 +5,7 @@ def test_get_unauthorized(client, comment):
     response = client.get("/api/comments/1")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+
 # def test_create_image(client, image):
 #
 #     response = client.post(
@@ -34,3 +35,24 @@ def test_create_comment(client, comment, token, image, monkeypatch):
     assert data["content"] == comment.get("content")
     assert data["image_id"] == comment.get("image_id")
 
+
+def test_get_existed_comment(client, comment, token):
+    response = client.get(
+        "/api/comments/1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+
+    assert "id" in data
+    assert data.get("content") == comment.get("content")
+
+
+def test_get_not_existed_comment(client, comment, token):
+    response = client.get(
+        "/api/comments/55",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
