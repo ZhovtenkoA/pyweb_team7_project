@@ -61,7 +61,7 @@ def user():
 
 @pytest.fixture(scope="module")
 def comment():
-    return {"id": 0,
+    return {"id": 1,
             "user_id": 0,
             "image_id": 0,
             "content": "test comment",

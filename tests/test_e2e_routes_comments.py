@@ -56,3 +56,13 @@ def test_get_not_existed_comment(client, comment, token):
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_delete_comment(client, comment, token):
+
+    response = client.delete(
+        f"/api/comments/{comment.get('id')}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
