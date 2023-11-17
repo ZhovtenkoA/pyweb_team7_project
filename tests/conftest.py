@@ -1,18 +1,18 @@
 import os
 import sys
 from unittest.mock import MagicMock
-from sqlalchemy import select
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
+from sqlalchemy import select
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import sessionmaker
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from main import app
-from pyweb_team7_project.database.models import Base, User
+from pyweb_team7_project.database.models import Base, User, Image
 from pyweb_team7_project.database.db import get_db
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -59,15 +59,32 @@ def user():
     return {"username": "testuser", "email": "test@gmail.com", "password": "11223344"}
 
 
-# @pytest.fixture(scope="module")
-# def contact():
-#     return {"contact_id": "1",
-#             "name": "Borys",
-#             "sur_name": "Johnson",
-#             "email": "bj@gmail.com",
-#             "phone": "+380123456789",
-#             "birthday": "1988-01-01"
-#             }
+@pytest.fixture(scope="module")
+def comment():
+    return {"id": 0,
+            "user_id": 0,
+            "image_id": 0,
+            "content": "test comment",
+            "created_at": "2023-11-17T22:22:53.247Z",
+            "edited_at": "2023-11-17T22:22:53.247Z"
+            }
+
+
+@pytest.fixture(scope="module")
+def image():
+    mock_image = Image()
+    mock_image.id = 0
+    mock_image.file_url="some_url"
+    mock_image.description = "image test description"
+    mock_image.user_id = 0
+
+    return mock_image
+
+    # return {"id": 0,
+    #         "file_url": "some_url",
+    #         "description": "image test description",
+    #         "user_id": 0
+    #         }
 
 
 @pytest.fixture()
@@ -92,7 +109,6 @@ def token(client, user, monkeypatch):
         data={"username": user.get("email"), "password": user.get("password")},
     )
     data = response.json()
-
 
     # print(data)
     return data["access_token"]
