@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from pyweb_team7_project.routes import auth, transformations, images
 from pyweb_team7_project.database.db import get_db
-from pyweb_team7_project.routes import auth, tags, comments
+from pyweb_team7_project.routes import auth, tags, comments, qrcode_generation
 
 app = FastAPI()
 
