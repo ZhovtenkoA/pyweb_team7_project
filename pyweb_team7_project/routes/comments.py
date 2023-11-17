@@ -9,7 +9,7 @@ from pyweb_team7_project.repository import comments as comments_repo
 from pyweb_team7_project.schemas import CommentResponseModel, CommentRequestModel, CommentUpdateModel
 from pyweb_team7_project.services.auth import auth_service
 
-from pyweb_team7_project.services.roles import admin_moderator, admin, free_access, admin_user
+from pyweb_team7_project.services.roles import admin_moderator, admin, free_access
 
 router = APIRouter(prefix="/comments", tags=["Comments"])
 

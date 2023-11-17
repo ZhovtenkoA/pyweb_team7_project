@@ -14,7 +14,7 @@ from ..schemas import UpdateImageModel, ImageResponse
 from ..services.auth import auth_service
 
 from pyweb_team7_project.services.roles import RoleAccess
-from pyweb_team7_project.services.roles import admin_moderator, admin, free_access, admin_user
+from pyweb_team7_project.services.roles import  free_access, admin_user
 
 access_to_images = RoleAccess([Role.admin])
 
