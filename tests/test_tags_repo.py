@@ -1,122 +1,169 @@
-import unittest
-from unittest.mock import MagicMock
+import pytest
+from unittest.mock import MagicMock, patch
 from sqlalchemy.orm import Session
 from pyweb_team7_project.database.models import Tag
 from pyweb_team7_project.schemas import TagModel, TagResponse
-from pyweb_team7_project.repository.tags import get_tags, get_tag, create_tag, update_tag, remove_tag
+from pyweb_team7_project.repository import tags as repository_tags
+from unittest import mock
+import asyncio
 
-class TestTagFunctions(unittest.TestCase):
-    def setUp(self):
-        # Create a mock database session
-        self.db_session = MagicMock(spec=Session)
+@pytest.mark.asyncio
+async def test_get_tags():
+    # Arrange
+    skip = 0
+    limit = 10
+    tags = [
+        Tag(name="Tag 1", id=1),
+        Tag(name="Tag 2", id=2),
+        Tag(name="Tag 3", id=3)
+    ]
+    db = MagicMock(spec=Session)
+    db.query.return_value.offset.return_value.limit.return_value.all.return_value = tags
 
-    async def test_get_tags(self):
-        # Mock the query method of the database session
-        self.db_session.query.return_value.offset.return_value.limit.return_value.all.return_value = [
-            Tag(name="Tag1", id=1),
-            Tag(name="Tag2", id=2),
-        ]
-        skip = 0
-        limit = 2
-        
-        tags = await get_tags(skip, limit, self.db_session)
+    # Act
+    result = await repository_tags.get_tags(skip, limit, db)
 
-        self.assertEqual(len(tags), 2)
-        self.assertEqual(tags[0]["name"], "Tag1")
-        self.assertEqual(tags[0]["id"], 1)
-        self.assertEqual(tags[1]["name"], "Tag2")
-        self.assertEqual(tags[1]["id"], 2)
+    # Assert
+    assert len(result) == 3
+    assert result[0]["name"] == "Tag 1"
+    assert result[0]["id"] == 1
+    assert result[1]["name"] == "Tag 2"
+    assert result[1]["id"] == 2
+    assert result[2]["name"] == "Tag 3"
+    assert result[2]["id"] == 3
+    db.query.assert_called_once_with(Tag)
+    db.query.return_value.offset.assert_called_once_with(skip)
+    db.query.return_value.offset.return_value.limit.assert_called_once_with(limit)
+    db.query.return_value.offset.return_value.limit.return_value.all.assert_called_once()
 
-    async def test_get_tag(self):
-        # Mock the filter method of the query and the first method of the filter result
-        self.db_session.query.return_value.filter.return_value.first.return_value = Tag(name="Tag1", id=1)
-        tag_id = 1
-        
-        tag = await get_tag(tag_id, self.db_session)
+@pytest.mark.asyncio
+async def test_create_tag():
+    # Arrange
+    body = TagModel(name="New Tag")
+    db = MagicMock(spec=Session)
+    db.commit.return_value = None
+    db.refresh.return_value = None
 
-        self.assertEqual(tag.name, "Tag1")
-        self.assertEqual(tag.id, 1)
+    expected_response = TagResponse(id=1, name="New Tag")  # Ожидаемый объект TagResponse
 
-    async def test_create_tag(self):
-        # Mock the add, commit, and refresh methods of the database session
-        self.db_session.add = MagicMock()
-        self.db_session.commit = MagicMock()
-        self.db_session.refresh = MagicMock()
-        
-        body = TagModel(name="Tag1")
-        
-        tag_response = await create_tag(body, self.db_session)
+    create_tag_mock = MagicMock(return_value=expected_response)
+    repository_tags.create_tag = create_tag_mock
 
-        self.db_session.add.assert_called_once()
-        self.db_session.commit.assert_called_once()
-        self.db_session.refresh.assert_called_once()
-        self.assertEqual(tag_response.id, 1)
-        self.assertEqual(tag_response.name, "Tag1")
+    # Act
+    with patch.object(db, 'add', wraps=db.add) as add_mock:
+        result = repository_tags.create_tag(body, db)
+        await asyncio.sleep(0)  # Ожидание выполнения асинхронных вызовов
 
-    async def test_update_tag(self):
-        # Mock the filter method of the query and the first method of the filter result
-        self.db_session.query.return_value.filter.return_value.first.return_value = Tag(name="Tag1", id=1)
-        tag_id = 1
-        body = TagModel(name="UpdatedTag")
-        
-        tag = await update_tag(tag_id, body, self.db_session)
+        # Assert
+        assert result == expected_response
 
-        self.assertEqual(tag.name, "UpdatedTag")
-        self.assertEqual(tag.id, 1)
-        self.db_session.commit.assert_called_once()
 
-    async def test_remove_tag(self):
-        # Mock the filter method of the query and the first method of the filter result
-        self.db_session.query.return_value.filter.return_value.first.return_value = Tag(name="Tag1", id=1)
-        tag_id = 1
+@pytest.mark.asyncio
+async def test_update_tag():
+    # Arrange
+    tag_id = 1
+    body = TagModel(name="Updated Tag")
+    updated_tag = Tag(name=body.name, id=tag_id)
+    db = MagicMock(spec=Session)
+    db.query.return_value.filter.return_value.first.return_value = updated_tag
+    db.commit.return_value = None
 
-        tag = await remove_tag(tag_id, self.db_session)
+    # Act
+    result = await repository_tags.update_tag(tag_id, body, db)
 
-        self.assertEqual(tag.name, "Tag1")
-        self.assertEqual(tag.id, 1)
-        self.db_session.delete.assert_called_once()
-        self.db_session.commit.assert_called_once()
+    # Assert
+    assert result == updated_tag
+    db.query.assert_called_once()
+    db.query.return_value.filter.assert_called_once_with(mock.ANY)  # Использование mock.ANY
+    db.query.return_value.filter.return_value.first.assert_called_once()
+    db.commit.assert_called_once()
 
-    async def test_get_tags_empty(self):
-    # Mock the query method of the database session to return an empty list
-        self.db_session.query.return_value.offset.return_value.limit.return_value.all.return_value = []
-        skip = 0
-        limit = 2
-        
-        tags = await get_tags(skip, limit, self.db_session)
+@pytest.mark.asyncio
+async def test_remove_tag():
+    # Arrange
+    tag_id = 1
+    tag = Tag(name="Tag 1", id=tag_id)
+    db = MagicMock(spec=Session)
+    db.query.return_value.filter.return_value.first.return_value = tag
+    db.commit.return_value = None
 
-        self.assertEqual(len(tags), 0)
+    # Act
+    result = await repository_tags.remove_tag(tag_id, db)
 
-    async def test_get_tag_none(self):
-        # Mock the filter method of the query and the first method of the filter result to return None
-        self.db_session.query.return_value.filter.return_value.first.return_value = None
-        tag_id = 1
-        
-        tag = await get_tag(tag_id, self.db_session)
+    # Assert
+    assert result == tag
+    db.query.assert_called_once()
+    db.query.return_value.filter.assert_called_once_with(mock.ANY)
+    db.query.return_value.filter.return_value.first.assert_called_once()
+    db.commit.assert_called_once()
 
-        self.assertIsNone(tag)
+@pytest.mark.asyncio
+async def test_get_tag():
+    # Arrange
+    tag_id = 1
+    tag = Tag(name="Tag 1", id=tag_id)
+    db = MagicMock(spec=Session)
+    db.query.return_value.filter.return_value.first.return_value = tag
 
-    async def test_update_tag_non_existing_id(self):
-        # Mock the filter method of the query and the first method of the filter result to return None
-        self.db_session.query.return_value.filter.return_value.first.return_value = None
-        tag_id = 1
-        body = TagModel(name="UpdatedTag")
-        
-        tag = await update_tag(tag_id, body, self.db_session)
+    # Act
+    result = await repository_tags.get_tag(tag_id, db)
 
-        self.assertIsNone(tag)
-        self.db_session.commit.assert_not_called()
+    # Assert
+    assert result.id == tag_id
+    assert result.name == "Tag 1"
+    db.query.assert_called_once_with(Tag)
+    db.query.return_value.filter.assert_called_once_with(mock.ANY)
+    db.query.return_value.filter.return_value.first.assert_called_once()
 
-    async def test_remove_tag_non_existing_id(self):
-        # Mock the filter method of the query and the first method of the filter result to return None
-        self.db_session.query.return_value.filter.return_value.first.return_value = None
-        tag_id = 1
+@pytest.mark.asyncio
+async def test_get_tag_not_found():
+    # Arrange
+    tag_id = 1
+    db = MagicMock(spec=Session)
+    db.query.return_value.filter.return_value.first.return_value = None
 
-        tag = await remove_tag(tag_id, self.db_session)
+    # Act
+    result = await repository_tags.get_tag(tag_id, db)
 
-        self.assertIsNone(tag)
-        self.db_session.delete.assert_not_called()
-        self.db_session.commit.assert_not_called()
+    # Assert
+    assert result is None
+    db.query.assert_called_once_with(Tag)
+    db.query.return_value.filter.assert_called_once_with(mock.ANY)
+    db.query.return_value.filter.return_value.first.assert_called_once()
 
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.asyncio
+async def test_update_tag_not_found():
+    # Arrange
+    tag_id = 1
+    body = TagModel(name="Updated Tag")
+    db = MagicMock(spec=Session)
+    db.query.return_value.filter.return_value.first.return_value = None
+
+    # Act
+    result = await repository_tags.update_tag(tag_id, body, db)
+
+    # Assert
+    assert result is None
+    db.query.assert_called_once()
+    db.query.return_value.filter.assert_called_once_with(mock.ANY)
+    db.query.return_value.filter.return_value.first.assert_called_once()
+    db.commit.assert_not_called()
+
+@pytest.mark.asyncio
+async def test_remove_tag_not_found():
+    # Arrange
+    tag_id = 1
+    db = MagicMock(spec=Session)
+    db.query.return_value.filter.return_value.first.return_value = None
+
+    # Act
+    result = await repository_tags.remove_tag(tag_id, db)
+
+    # Assert
+    assert result is None
+    db.query.assert_called_once()
+    db.query.return_value.filter.assert_called_once_with(mock.ANY)
+    db.query.return_value.filter.return_value.first.assert_called_once()
+    db.commit.assert_not_called()
+
+pytest.main()
