@@ -18,7 +18,8 @@ class UserDb(BaseModel):
     avatar: str
     role: Role 
     class Config:
-        orm_mode = True
+        # orm_mode = True
+        from_attributes = True
 
 
 class ResponseUser(BaseModel):
@@ -84,7 +85,8 @@ class ImageResponse(BaseModel):
     # tags: List[str]
 
     class Config:
-        orm_mode = True
+        # orm_mode = True
+        from_attributes = True
 
 
 class QRCodeRequestTest(BaseModel):
