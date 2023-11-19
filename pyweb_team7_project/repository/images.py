@@ -11,19 +11,38 @@ import os
 import qrcode
 import cloudinary
 
-async def create_image_and_upload_to_cloudinary(db: Session, file, description: str, user_id: int, tag_names: list = None) -> Image:
+
+async def create_image_and_upload_to_cloudinary(
+    db: Session, file, description: str, user_id: int, tag_names: list = None
+) -> Image:
+    """
+    Create an image object, upload the image file to Cloudinary, and associate it with a user in the database.
+
+    :param db: The database session used to interact with the database.
+    :param file: The image file to be uploaded.
+    :param description: The description of the image.
+    :param user_id: The ID of the user who owns the image.
+    :param tag_names: A list of tag names to associate with the image. Defaults to None.
+    :type db: Session
+    :type file: Any
+    :type description: str
+    :type user_id: int
+    :type tag_names: list, optional
+    :return: The created image object.
+    :rtype: Image
+    """
     user = db.query(User).filter_by(id=user_id).first()
 
     if not user:
         raise Exception("User not found")
 
-    image = Image(description=description, user_id=user_id, file_url='cloudinary')
+    image = Image(description=description, user_id=user_id, file_url="cloudinary")
 
     cloudinary.config(
         cloud_name=settings.cloudinary_name,
         api_key=settings.cloudinary_api_key,
         api_secret=settings.cloudinary_api_secret,
-        secure=True
+        secure=True,
     )
 
     print(file.file)
@@ -31,9 +50,9 @@ async def create_image_and_upload_to_cloudinary(db: Session, file, description: 
     result = upload(file.file)
 
     # Отримуємо public ID завантаженого зображення
-    image.public_id = result.get('public_id')
+    image.public_id = result.get("public_id")
     # Отримайте URL обробленого зображення
-    image.file_url = result.get('secure_url')
+    image.file_url = result.get("secure_url")
 
     if tag_names:
         for tag_name in tag_names:
@@ -51,49 +70,70 @@ async def create_image_and_upload_to_cloudinary(db: Session, file, description: 
 
 async def get_image_by_id(user: User, db: Session, image_id: int):
     """
-    The get_image_by_id function takes in a user, database session, and image id.
-    It then queries the database for an image with that id and returns it.
+    Retrieve an image from the database based on the provided user, database session, and image ID.
 
-    :param user: User: Pass the user object to the function
-    :param db: Session: Pass the database session to the function
-    :param image_id: int: Filter the image by id
-    :return: The image object that matches the user and image id
-    :doc-author: Trelent
+    :param user: The user object.
+    :param db: The database session used to interact with the database.
+    :param image_id: The ID of the image to retrieve.
+    :type user: User
+    :type db: Session
+    :type image_id: int
+    :return: The retrieved image object.
+    :rtype: Image
     """
-    image = db.query(Image).filter(and_(Image.id == image_id, 
-                                        #Image.user_id == user.id
-                                        )).first()
+    image = (
+        db.query(Image)
+        .filter(
+            and_(
+                Image.id == image_id,
+                # Image.user_id == user.id
+            )
+        )
+        .first()
+    )
     return image
+
 
 async def get_all_images(db: Session):
     """
-    The get_all_images function takes in a database session and retrieves all images.
+    Retrieve all images from the database.
 
-    :param db: Session: Pass the database session to the function
-    :return: A list of all image objects
+    :param db: The database session used to interact with the database.
+    :type db: Session
+    :return: A list of all image objects.
+    :rtype: List[Image]
     """
     images = db.query(Image).all()
     return images
 
-async def update_image_description(user: User, db: Session, image_id: int, new_description: str):
-    """
-    The update_image_description function updates the description of an image in the database.
-        Args:
-            user (User): The user who is updating their image's description.
-            db (Session): A connection to the database that will be used for querying and committing changes.
-            image_id (int): The id of the image whose description is being updated.
-            new_description (str): The new description that will replace any previous descriptions for this particular image.
 
-    :param user: User: Get the user id from the database
-    :param db: Session: Access the database
-    :param image_id: int: Identify the image to be updated
-    :param new_description: str: Update the description of an image
-    :return: The image object, which is then used to update the description
-    :doc-author: Trelent
+async def update_image_description(
+    user: User, db: Session, image_id: int, new_description: str
+):
     """
-    image = db.query(Image).filter(and_(Image.id == image_id, 
-                                        #Image.user_id == user.id
-                                        )).first()
+    Update the description of an image in the database.
+
+    :param user: The user object who is updating the image description.
+    :param db: The database session used to interact with the database.
+    :param image_id: The ID of the image to update.
+    :param new_description: The new description for the image.
+    :type user: User
+    :type db: Session
+    :type image_id: int
+    :type new_description: str
+    :return: The updated image object.
+    :rtype: Image
+    """
+    image = (
+        db.query(Image)
+        .filter(
+            and_(
+                Image.id == image_id,
+                # Image.user_id == user.id
+            )
+        )
+        .first()
+    )
     if image:
         image.description = new_description
         db.commit()
@@ -102,12 +142,16 @@ async def update_image_description(user: User, db: Session, image_id: int, new_d
 
 async def update_image_qrcode_url(image: Image, db: Session, new_qrcode_url: str):
     """
-    The update_image_qrcode_url function updates the qrcode_url of an image in the database.
+    Update the QR code URL of an image in the database.
 
-    :param image: Image: Pass in the image object
-    :param db: Session: Pass the database session to the function
-    :param new_qrcode_url: str: Update the qrcode_url of an image
-    :return: An image object
+    :param image: The image object to update.
+    :param db: The database session used to interact with the database.
+    :param new_qrcode_url: The new QR code URL for the image.
+    :type image: Image
+    :type db: Session
+    :type new_qrcode_url: str
+    :return: The updated image object.
+    :rtype: Image
     """
     if image:
         # image.qrcode_url = new_qrcode_url
@@ -119,19 +163,22 @@ async def update_image_qrcode_url(image: Image, db: Session, new_qrcode_url: str
 
 async def delete_image(user: User, db: Session, image_id: int):
     """
-    The delete_image function deletes an image from the database.
-        Args:
-            user (User): The user who is deleting the image.
-            db (Session): A connection to the database.  This is used to delete images from it.
-            image_id (int): The id of the image that will be deleted.
+    Delete an image from the database.
 
-    :param user: User: Get the user id of the user who is logged in
-    :param db: Session: Pass the database session to the function
-    :param image_id: int: Identify the image that is to be deleted
-    :return: The image that was deleted
-    :doc-author: Trelent
+    :param user: The user object who is deleting the image.
+    :param db: The database session used to interact with the database.
+    :param image_id: The ID of the image to delete.
+    :type user: User
+    :type db: Session
+    :type image_id: int
+    :return: The deleted image object.
+    :rtype: Image
     """
-    image = db.query(Image).filter(and_(Image.id == image_id, Image.user_id == user.id)).first()
+    image = (
+        db.query(Image)
+        .filter(and_(Image.id == image_id, Image.user_id == user.id))
+        .first()
+    )
     if not image:
         return False, {"message": "image not found"}
     if image:
@@ -142,7 +189,18 @@ async def delete_image(user: User, db: Session, image_id: int):
         print("Image deleted")
     return image
 
+
 async def get_QR(image_id: int, db: Session):
+    """
+    Retrieve the QR code URL for an image from the database.
+
+    :param image_id: The ID of the image.
+    :param db: The database session used to interact with the database.
+    :type image_id: int
+    :type db: Session
+    :return: A dictionary containing the QR code URL for the image.
+    :rtype: Dict[str, str]
+    """
     image = db.query(Image).filter(and_(Image.id == image_id)).first()
     if image is None:
         raise Exception("Image not found")
@@ -156,7 +214,7 @@ async def get_QR(image_id: int, db: Session):
                 box_size=10,
                 border=4,
             )
-            print('qr data')
+            print("qr data")
             qr.add_data(image.file_url)
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
@@ -165,10 +223,11 @@ async def get_QR(image_id: int, db: Session):
             img.save(qr_code_file_path)
 
             cloudinary.config(
-            cloud_name=settings.cloudinary_name,
-            api_key=settings.cloudinary_api_key,
-            api_secret=settings.cloudinary_api_secret,
-            secure=True)
+                cloud_name=settings.cloudinary_name,
+                api_key=settings.cloudinary_api_key,
+                api_secret=settings.cloudinary_api_secret,
+                secure=True,
+            )
 
             upload_result = cloudinary.uploader.upload(
                 qr_code_file_path,
@@ -187,6 +246,6 @@ async def get_QR(image_id: int, db: Session):
                 raise e
 
             os.remove(qr_code_file_path)
-            return { "qr_code_url": qr.url}
+            return {"qr_code_url": qr.url}
 
         return {"qr_code_url": qr}

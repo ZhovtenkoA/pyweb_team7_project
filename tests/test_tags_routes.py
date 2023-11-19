@@ -2,12 +2,13 @@ import unittest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from pyweb_team7_project.database.db import get_db
-from unittest.mock import AsyncMock, MagicMock
-from sqlalchemy.ext.asyncio import AsyncSession
+from unittest.mock import MagicMock
+
 
 from pyweb_team7_project.repository import tags as repository_tags
-from pyweb_team7_project.schemas import TagModel, TagResponse
+from pyweb_team7_project.schemas import TagModel
 from main import app
+
 
 class TestTagRouter(unittest.TestCase):
     def setUp(self):
@@ -89,5 +90,6 @@ class TestTagRouter(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()["detail"], "Not Found")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

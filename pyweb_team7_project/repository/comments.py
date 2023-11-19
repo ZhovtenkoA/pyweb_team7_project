@@ -30,7 +30,9 @@ async def get_image_by_id(image_id: int, db: Session) -> Image | None:
     return db.query(Image).filter(Image.id == image_id).first()
 
 
-async def get_all_image_comments(image_id: int, skip: int, limit: int, db: Session) -> List[Comment]:
+async def get_all_image_comments(
+    image_id: int, skip: int, limit: int, db: Session
+) -> List[Comment]:
     """
     The get_all_image_comments function returns a list of comments for the image with the given id.
     The skip and limit parameters are used to paginate through results.
@@ -41,11 +43,18 @@ async def get_all_image_comments(image_id: int, skip: int, limit: int, db: Sessi
     :param db: Session: Pass the database session to the function
     :return: A list of comments for a given image id
     """
-    return db.query(Comment).filter(Comment.image_id == image_id).offset(skip).limit(limit).all()
+    return (
+        db.query(Comment)
+        .filter(Comment.image_id == image_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
-async def create_comment(body: CommentRequestModel, user: User, image_db: Image,
-                         db: Session) -> CommentResponseModel | None:
+async def create_comment(
+    body: CommentRequestModel, user: User, image_db: Image, db: Session
+) -> CommentResponseModel | None:
     """
     The create_comment function creates a new comment in the database.
         It takes in a CommentRequestModel, which is used to create the new comment.
@@ -69,7 +78,9 @@ async def create_comment(body: CommentRequestModel, user: User, image_db: Image,
     return new_comment
 
 
-async def update_comment(comment_db: Comment, body: CommentRequestModel, db: Session) -> Comment | None:
+async def update_comment(
+    comment_db: Comment, body: CommentRequestModel, db: Session
+) -> Comment | None:
     """
     The update_comment function updates a comment in the database.
         Args:
@@ -92,13 +103,12 @@ async def update_comment(comment_db: Comment, body: CommentRequestModel, db: Ses
 async def remove_comment(comment_db: Comment, db: Session) -> Comment | None:
     """
     The remove_comment function removes a comment from the database.
-        Args:
-            comment_db (Comment): The Comment object to be removed from the database.
-            db (Session): The Session object used to interact with the database.
-
-    :param comment_db: Comment: Pass the comment object to be deleted
-    :param db: Session: Pass the database session to the function
-    :return: The comment that was deleted or none if the comment does not exist
+    Args:
+        comment_db (Comment): The Comment object to be removed from the database.
+        db (Session): The Session object used to interact with the database.
+    :param comment_db: Comment: The comment object to be deleted.
+    :param db: Session: The database session.
+    :return: The comment that was deleted or `None` if the comment does not exist.
     """
     db.delete(comment_db)
     db.commit()
