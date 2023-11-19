@@ -61,20 +61,21 @@ def user():
 
 @pytest.fixture(scope="module")
 def comment():
-    return {"id": 1,
-            "user_id": 0,
-            "image_id": 0,
-            "content": "test comment",
-            "created_at": "2023-11-17T22:22:53.247Z",
-            "edited_at": "2023-11-17T22:22:53.247Z"
-            }
+    return {
+        "id": 1,
+        "user_id": 0,
+        "image_id": 0,
+        "content": "test comment",
+        "created_at": "2023-11-17T22:22:53.247Z",
+        "edited_at": "2023-11-17T22:22:53.247Z",
+    }
 
 
 @pytest.fixture(scope="module")
 def image():
     mock_image = Image()
     mock_image.id = 0
-    mock_image.file_url="some_url"
+    mock_image.file_url = "some_url"
     mock_image.description = "image test description"
     mock_image.user_id = 0
 

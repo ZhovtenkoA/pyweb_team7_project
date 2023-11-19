@@ -37,7 +37,7 @@ def test_repeat_create_user(client, user):
 def test_login_user_not_confirmed(client, user):
     response = client.post(
         "/api/auth/login",
-        data={"username": user.get('email'), "password": user.get('password')},
+        data={"username": user.get("email"), "password": user.get("password")},
     )
     assert response.status_code == 401, response.text
     data = response.json()
@@ -45,12 +45,14 @@ def test_login_user_not_confirmed(client, user):
 
 
 def test_login_user(client, session, user):
-    current_user: User = session.query(User).filter(User.email == user.get('email')).first()
+    current_user: User = (
+        session.query(User).filter(User.email == user.get("email")).first()
+    )
     current_user.confirmed = True
     session.commit()
     response = client.post(
         "/api/auth/login",
-        data={"username": user.get('email'), "password": user.get('password')},
+        data={"username": user.get("email"), "password": user.get("password")},
     )
     assert response.status_code == 200, response.text
     data = response.json()
@@ -60,7 +62,7 @@ def test_login_user(client, session, user):
 def test_login_user_wrong_password(client, user):
     response = client.post(
         "/api/auth/login",
-        data={"username": user.get('email'), "password": "password"},
+        data={"username": user.get("email"), "password": "password"},
     )
     assert response.status_code == 401, response.text
     data = response.json()
@@ -70,7 +72,7 @@ def test_login_user_wrong_password(client, user):
 def test_login_user_wrong_email(client, user):
     response = client.post(
         "/api/auth/login",
-        data={"username": "testtest@gmail.com", "password": user.get('password')},
+        data={"username": "testtest@gmail.com", "password": user.get("password")},
     )
     assert response.status_code == 401, response.text
     data = response.json()

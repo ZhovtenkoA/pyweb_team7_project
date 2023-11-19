@@ -5,11 +5,12 @@ from pyweb_team7_project.database.models import User, Role
 from pyweb_team7_project.schemas import UserModel
 from sqlalchemy import func
 
+
 async def get_user_by_email(email: str, db: Session) -> User | None:
     """
     The get_user_by_email function takes in an email and a database session,
     then returns the user with that email.
-    
+
     :param email: str: Pass in the email of the user that we want to get
     :param db: Session: Pass the database session to the function
     :return: The first user found with the email specified
@@ -25,7 +26,7 @@ async def create_user(body: UserModel, db: Session) -> User:
             db (Session): The SQLAlchemy Session object used for querying and updating data in the database.
         Returns:
             User: A User object representing a newly created user.
-    
+
     :param body: UserModel: Pass the data from the request body into our create_user function
     :param db: Session: Create a database session
     :return: A user object
@@ -44,7 +45,7 @@ async def create_user(body: UserModel, db: Session) -> User:
 
     if users_count == 0:
         new_user.role = Role.admin
-    try:    
+    try:
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
@@ -57,7 +58,7 @@ async def create_user(body: UserModel, db: Session) -> User:
 async def update_token(user: User, token: str | None, db: Session) -> None:
     """
     The update_token function updates the refresh token for a user.
-    
+
     :param user: User: Identify the user that is being updated
     :param token: str | None: Pass the token to the function
     :param db: Session: Commit the changes to the database
@@ -70,7 +71,7 @@ async def update_token(user: User, token: str | None, db: Session) -> None:
 async def confirmed_email(email: str, db: Session) -> None:
     """
     The confirmed_email function sets the confirmed field of a user to True.
-    
+
     :param email: str: Pass the email address of the user to be confirmed
     :param db: Session: Pass the database session into the function
     :return: None
@@ -78,6 +79,7 @@ async def confirmed_email(email: str, db: Session) -> None:
     user = await get_user_by_email(email, db)
     user.confirmed = True
     db.commit()
+
 
 async def get_users(skip: int, limit: int, db: Session) -> list[User]:
     """
@@ -91,6 +93,7 @@ async def get_users(skip: int, limit: int, db: Session) -> list[User]:
     query = db.query(User).offset(skip).limit(limit).all()
     return query
 
+
 async def make_user_role(email: str, role: Role, db: Session) -> None:
     """
     The make_user_role function takes in an email and a role, and then updates the user's role to that new one.
@@ -103,7 +106,7 @@ async def make_user_role(email: str, role: Role, db: Session) -> None:
     :param db: Session: Pass the database session to the function
     :return: None
     """
-    
+
     user = await get_user_by_email(email, db)
     user.role = role
     try:
@@ -111,4 +114,3 @@ async def make_user_role(email: str, role: Role, db: Session) -> None:
     except Exception as e:
         db.rollback()
         raise e
-    

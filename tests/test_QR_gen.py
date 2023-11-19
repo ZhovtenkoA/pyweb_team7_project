@@ -5,12 +5,19 @@ import asyncio
 
 
 class TestGetQRCodeImageUrl(unittest.TestCase):
-    @patch('tempfile.NamedTemporaryFile')
-    @patch('qrcode.make')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.generate_random_name')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.upload')
-    @patch('os.remove')
-    async def test_get_qrcode_image_url_with_data(self, mock_remove, mock_upload, mock_generate_random_name, mock_make, mock_tempfile):
+    @patch("tempfile.NamedTemporaryFile")
+    @patch("qrcode.make")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.generate_random_name")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.upload")
+    @patch("os.remove")
+    async def test_get_qrcode_image_url_with_data(
+        self,
+        mock_remove,
+        mock_upload,
+        mock_generate_random_name,
+        mock_make,
+        mock_tempfile,
+    ):
         # Mock the necessary objects and methods
         qr_data = "test_data"
         folder_name = "test_folder"
@@ -28,11 +35,13 @@ class TestGetQRCodeImageUrl(unittest.TestCase):
 
         # Assertions
         self.assertEqual(result, cloud_url)
-        mock_tempfile.assert_called_once_with(delete=False, suffix='.png')
+        mock_tempfile.assert_called_once_with(delete=False, suffix=".png")
         mock_make.assert_called_once_with(qr_data)
         mock_make.return_value.save.assert_called_once_with(temp_file_path)
         mock_generate_random_name.assert_called_once_with(16)
-        mock_upload.assert_called_once_with(file=temp_file_path, public_id=f"{folder_name}/test_name")
+        mock_upload.assert_called_once_with(
+            file=temp_file_path, public_id=f"{folder_name}/test_name"
+        )
         mock_remove.assert_called_once_with(temp_file_path)
 
     async def test_get_qrcode_image_url_with_no_data(self):
@@ -46,12 +55,19 @@ class TestGetQRCodeImageUrl(unittest.TestCase):
         # Assertions
         self.assertEqual(result, "")
 
-    @patch('tempfile.NamedTemporaryFile')
-    @patch('qrcode.make')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.generate_random_name')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.upload')
-    @patch('os.remove')
-    async def test_get_qrcode_image_url_with_exception(self, mock_remove, mock_upload, mock_generate_random_name, mock_make, mock_tempfile):
+    @patch("tempfile.NamedTemporaryFile")
+    @patch("qrcode.make")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.generate_random_name")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.upload")
+    @patch("os.remove")
+    async def test_get_qrcode_image_url_with_exception(
+        self,
+        mock_remove,
+        mock_upload,
+        mock_generate_random_name,
+        mock_make,
+        mock_tempfile,
+    ):
         # Mock the necessary objects and methods
         qr_data = "test_data"
         folder_name = "test_folder"
@@ -66,16 +82,23 @@ class TestGetQRCodeImageUrl(unittest.TestCase):
 
         # Assertions
         self.assertEqual(result, "")
-        mock_tempfile.assert_called_once_with(delete=False, suffix='.png')
+        mock_tempfile.assert_called_once_with(delete=False, suffix=".png")
         mock_make.assert_called_once_with(qr_data)
         mock_remove.assert_called_once_with(temp_file_path)
 
-    @patch('tempfile.NamedTemporaryFile')
-    @patch('qrcode.make')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.generate_random_name')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.upload')
-    @patch('os.remove')
-    async def test_get_qrcode_image_url_with_no_temp_file(self, mock_remove, mock_upload, mock_generate_random_name, mock_make, mock_tempfile):
+    @patch("tempfile.NamedTemporaryFile")
+    @patch("qrcode.make")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.generate_random_name")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.upload")
+    @patch("os.remove")
+    async def test_get_qrcode_image_url_with_no_temp_file(
+        self,
+        mock_remove,
+        mock_upload,
+        mock_generate_random_name,
+        mock_make,
+        mock_tempfile,
+    ):
         # Mock the necessary objects and methods
         qr_data = "test_data"
         folder_name = "test_folder"
@@ -92,17 +115,24 @@ class TestGetQRCodeImageUrl(unittest.TestCase):
 
         # Assertions
         self.assertEqual(result, cloud_url)
-        mock_tempfile.assert_called_once_with(delete=False, suffix='.png')
+        mock_tempfile.assert_called_once_with(delete=False, suffix=".png")
         mock_make.assert_called_once_with(qr_data)
 
 
 class TestGetQRCodeImageUrl(unittest.TestCase):
-    @patch('tempfile.NamedTemporaryFile')
-    @patch('qrcode.make')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.generate_random_name')
-    @patch('pyweb_team7_project.services.cloudinary.UploadService.upload')
-    @patch('os.remove')
-    def test_get_qrcode_image_url_with_data(self, mock_remove, mock_upload, mock_generate_random_name, mock_make, mock_tempfile):
+    @patch("tempfile.NamedTemporaryFile")
+    @patch("qrcode.make")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.generate_random_name")
+    @patch("pyweb_team7_project.services.cloudinary.UploadService.upload")
+    @patch("os.remove")
+    def test_get_qrcode_image_url_with_data(
+        self,
+        mock_remove,
+        mock_upload,
+        mock_generate_random_name,
+        mock_make,
+        mock_tempfile,
+    ):
         # Mock the necessary objects and methods
         qr_data = "test_data"
         folder_name = "test_folder"
@@ -120,11 +150,13 @@ class TestGetQRCodeImageUrl(unittest.TestCase):
 
         # Assertions
         self.assertEqual(result, cloud_url)
-        mock_tempfile.assert_called_once_with(delete=False, suffix='.png')
+        mock_tempfile.assert_called_once_with(delete=False, suffix=".png")
         mock_make.assert_called_once_with(qr_data)
         mock_make.return_value.save.assert_called_once_with(temp_file_path)
         mock_generate_random_name.assert_called_once_with(16)
-        mock_upload.assert_called_once_with(file=temp_file_path, public_id=f"{folder_name}/test_name")
+        mock_upload.assert_called_once_with(
+            file=temp_file_path, public_id=f"{folder_name}/test_name"
+        )
         mock_remove.assert_called_once_with(temp_file_path)
 
     def test_get_qrcode_image_url_with_no_data(self):
@@ -139,5 +171,5 @@ class TestGetQRCodeImageUrl(unittest.TestCase):
         self.assertEqual(result, "")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

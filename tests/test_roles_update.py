@@ -152,5 +152,5 @@ class TestRoleAccess(unittest.TestCase):
         self.assertEqual(context.exception.detail, "Forbidden operation")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
@@ -13,8 +12,16 @@ from pydantic import EmailStr
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.get("/get_all",response_model=list[UserDb],dependencies=[Depends(free_access)])
-async def get_all_users(skip: int = 0,limit: int = 10,user: User = Depends(auth_service.get_current_user),db: Session = Depends(get_db),):
+
+@router.get(
+    "/get_all", response_model=list[UserDb], dependencies=[Depends(free_access)]
+)
+async def get_all_users(
+    skip: int = 0,
+    limit: int = 10,
+    user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+):
     """
     **Get a list of users.**
 
@@ -41,8 +48,7 @@ async def get_all_users(skip: int = 0,limit: int = 10,user: User = Depends(auth_
     return list_users
 
 
-
-@router.patch("/asign_role/{role}",dependencies=[Depends(admin)])
+@router.patch("/asign_role/{role}", dependencies=[Depends(admin)])
 async def assign_role(email: EmailStr, role: Role, db: Session = Depends(get_db)):
     """
     **Assign a role to a user by email.**
@@ -67,9 +73,7 @@ async def assign_role(email: EmailStr, role: Role, db: Session = Depends(get_db)
     user = await users.get_user_by_email(email, db)
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     if role == user.role:
         return {"message": "The role has already been assigned to this user"}

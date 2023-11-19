@@ -7,16 +7,13 @@ from pyweb_team7_project.repository import tags as repository_tags
 from unittest import mock
 import asyncio
 
+
 @pytest.mark.asyncio
 async def test_get_tags():
     # Arrange
     skip = 0
     limit = 10
-    tags = [
-        Tag(name="Tag 1", id=1),
-        Tag(name="Tag 2", id=2),
-        Tag(name="Tag 3", id=3)
-    ]
+    tags = [Tag(name="Tag 1", id=1), Tag(name="Tag 2", id=2), Tag(name="Tag 3", id=3)]
     db = MagicMock(spec=Session)
     db.query.return_value.offset.return_value.limit.return_value.all.return_value = tags
 
@@ -36,6 +33,7 @@ async def test_get_tags():
     db.query.return_value.offset.return_value.limit.assert_called_once_with(limit)
     db.query.return_value.offset.return_value.limit.return_value.all.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_create_tag():
     # Arrange
@@ -44,13 +42,15 @@ async def test_create_tag():
     db.commit.return_value = None
     db.refresh.return_value = None
 
-    expected_response = TagResponse(id=1, name="New Tag")  # Ожидаемый объект TagResponse
+    expected_response = TagResponse(
+        id=1, name="New Tag"
+    )  # Ожидаемый объект TagResponse
 
     create_tag_mock = MagicMock(return_value=expected_response)
     repository_tags.create_tag = create_tag_mock
 
     # Act
-    with patch.object(db, 'add', wraps=db.add) as add_mock:
+    with patch.object(db, "add", wraps=db.add) as add_mock:
         result = repository_tags.create_tag(body, db)
         await asyncio.sleep(0)  # Ожидание выполнения асинхронных вызовов
 
@@ -74,9 +74,12 @@ async def test_update_tag():
     # Assert
     assert result == updated_tag
     db.query.assert_called_once()
-    db.query.return_value.filter.assert_called_once_with(mock.ANY)  # Использование mock.ANY
+    db.query.return_value.filter.assert_called_once_with(
+        mock.ANY
+    )  # Использование mock.ANY
     db.query.return_value.filter.return_value.first.assert_called_once()
     db.commit.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_remove_tag():
@@ -97,6 +100,7 @@ async def test_remove_tag():
     db.query.return_value.filter.return_value.first.assert_called_once()
     db.commit.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_get_tag():
     # Arrange
@@ -115,6 +119,7 @@ async def test_get_tag():
     db.query.return_value.filter.assert_called_once_with(mock.ANY)
     db.query.return_value.filter.return_value.first.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_get_tag_not_found():
     # Arrange
@@ -130,6 +135,7 @@ async def test_get_tag_not_found():
     db.query.assert_called_once_with(Tag)
     db.query.return_value.filter.assert_called_once_with(mock.ANY)
     db.query.return_value.filter.return_value.first.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_update_tag_not_found():
@@ -149,6 +155,7 @@ async def test_update_tag_not_found():
     db.query.return_value.filter.return_value.first.assert_called_once()
     db.commit.assert_not_called()
 
+
 @pytest.mark.asyncio
 async def test_remove_tag_not_found():
     # Arrange
@@ -165,5 +172,6 @@ async def test_remove_tag_not_found():
     db.query.return_value.filter.assert_called_once_with(mock.ANY)
     db.query.return_value.filter.return_value.first.assert_called_once()
     db.commit.assert_not_called()
+
 
 pytest.main()
