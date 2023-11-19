@@ -21,7 +21,10 @@ def test_create_comment(client, comment, token, image, monkeypatch):
     async def mock_get_image_by_id(*args, **kwargs):
         return image
 
-    monkeypatch.setattr("pyweb_team7_project.routes.comments.comments_repo.get_image_by_id", mock_get_image_by_id)
+    monkeypatch.setattr(
+        "pyweb_team7_project.routes.comments.comments_repo.get_image_by_id",
+        mock_get_image_by_id,
+    )
 
     response = client.post(
         "/api/comments",
@@ -59,7 +62,6 @@ def test_get_not_existed_comment(client, comment, token):
 
 
 def test_delete_comment(client, comment, token):
-
     response = client.delete(
         f"/api/comments/{comment.get('id')}",
         headers={"Authorization": f"Bearer {token}"},
