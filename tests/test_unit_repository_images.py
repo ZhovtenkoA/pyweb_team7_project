@@ -1,8 +1,8 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import asyncio
 from sqlalchemy.orm import Session
-
+import os
 from pyweb_team7_project.repository.images import (
     create_image_and_upload_to_cloudinary,
     get_image_by_id,
@@ -19,7 +19,56 @@ from pyweb_team7_project.database.models import (
     QR_code,
 )
 
-from unittest.mock import patch
+class TestCreateImageAndUploadToCloudinary(unittest.TestCase):
+    @patch("pyweb_team7_project.routes.images.cloudinary.config")
+    @patch("pyweb_team7_project.repository.images.create_image_and_upload_to_cloudinary")
+    async def test_create_image_and_upload_to_cloudinary(self, mock_upload, mock_config):
+        db_session = MagicMock(spec=Session)
+        file_mock = MagicMock()
+        file_mock.file = os.path.join(
+            os.path.dirname(__file__), "test_images", "test.jpg")
+        description = "Test image"
+        user_id = 1
+        tag_names = ["tag1", "tag2"]
+
+        user = User(id=user_id)
+        db_session.query.return_value.filter_by.return_value.first.return_value = user
+
+        mock_upload.return_value = {
+            "public_id": "public_id",
+            "secure_url": "https://example.com/image.jpg",
+        }
+
+        result = create_image_and_upload_to_cloudinary(
+            db_session, file_mock, description, user_id, tag_names
+        )
+
+        # Проверяем, что функции и методы были вызваны с правильными аргументами
+        db_session.query.assert_called_once_with(User)
+        db_session.query.return_value.filter_by.assert_called_once_with(id=user_id)
+        mock_upload.assert_called_once_with(file_mock.file)
+
+        # Проверяем, что создан объект Image с правильными значениями
+        self.assertIsInstance(result, Image)
+        self.assertEqual(result.description, description)
+        self.assertEqual(result.user_id, user_id)
+        self.assertEqual(result.file_url, "https://example.com/image.jpg")
+        self.assertEqual(result.public_id, "public_id")
+
+        # Проверяем, что были созданы и связаны объекты Tag
+        self.assertEqual(len(result.tags), 2)
+        self.assertIsInstance(result.tags[0], Tag)
+        self.assertEqual(result.tags[0].name, "tag1")
+        self.assertIsInstance(result.tags[1], Tag)
+        self.assertEqual(result.tags[1].name, "tag2")
+
+        self.assertIsInstance(result, Image)
+        self.assertEqual(result.file_url, mock_upload["secure_url"])
+        self.assertEqual(result.public_id, mock_upload["public_id"])
+        self.assertEqual(result.description, self.description)
+        self.assertEqual(result.user_id, self.user.id)
+        self.assertEqual(len(result.tags), len(self.tag_names))
+        self.assertTrue(all(tag.name in self.tag_names for tag in result.tags))
 
 class TemporaryFileWrapper:
         def __init__(self, file_path):
@@ -45,45 +94,6 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
     def tearDown(self):
         # Clean up data after running tests
         self.session.rollback()
-
-    
-
-    # async def test_create_image_and_upload_to_cloudinary(self):
-    #     # Mock the necessary objects and methods
-    #     file_data = b"dummy_file_data"
-    #     mock_file = io.BytesIO(file_data)
-
-    #     # Create a temporary file
-    #     temp_file_path = tempfile.mktemp(suffix=".jpg")
-    #     with open(temp_file_path, "wb") as temp_file:
-    #         temp_file.write(mock_file.getvalue())
-
-    #     cloudinary_upload_result = {
-    #         "secure_url": "https://example.com/image.jpg",
-    #         "public_id": "public_id",
-    #     }
-        
-    #     with patch("pyweb_team7_project.repository.images.create_image_and_upload_to_cloudinary") as mock_upload:
-    #         mock_upload.return_value = cloudinary_upload_result
-
-    #         # Call the function
-    #         temp_file_wrapper = TemporaryFileWrapper(temp_file_path)
-    #         image = await create_image_and_upload_to_cloudinary(
-    #             db=self.session,
-    #             user_id=self.user.id,
-    #             file=temp_file_wrapper,  # Use the file attribute of the wrapper
-    #             description=self.description,
-    #             tag_names=self.tag_names
-    #         )
-
-    #     # Assertions
-    #     self.assertIsInstance(image, Image)
-    #     self.assertEqual(image.file_url, cloudinary_upload_result["secure_url"])
-    #     self.assertEqual(image.public_id, cloudinary_upload_result["public_id"])
-    #     self.assertEqual(image.description, self.description)
-    #     self.assertEqual(image.user_id, self.user.id)
-    #     self.assertEqual(len(image.tags), len(self.tag_names))
-    #     self.assertTrue(all(tag.name in self.tag_names for tag in image.tags))
 
 
     async def test_get_image_by_id(self):
