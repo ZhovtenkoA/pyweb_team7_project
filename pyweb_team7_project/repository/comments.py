@@ -17,19 +17,6 @@ async def get_comment_by_id(comment_id: int, db: Session) -> Comment | None:
     """
     return db.query(Comment).filter(Comment.id == comment_id).first()
 
-
-async def get_image_by_id(image_id: int, db: Session) -> Image | None:
-    """
-    The get_image_by_id function takes in an image_id and a db Session object.
-    It then queries the database for the Image with that id, and returns it.
-
-    :param image_id: int: Specify the image id of the image we want to get from the database
-    :param db: Session: Pass in the database session
-    :return: An image object
-    """
-    return db.query(Image).filter(Image.id == image_id).first()
-
-
 async def get_all_image_comments(
     image_id: int, skip: int, limit: int, db: Session
 ) -> List[Comment]:
