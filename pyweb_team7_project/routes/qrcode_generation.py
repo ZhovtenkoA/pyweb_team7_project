@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 
 from ..database.db import get_db
 from ..database.models import User
-from ..repository.comments import get_image_by_id
-from ..repository.images import update_image_qrcode_url
+from ..repository.images import update_image_qrcode_url, get_image_by_id
 from ..schemas import QRCodeResponse, QRCodeRequestTest, ImageResponse
 from ..services.auth import auth_service
 from ..services.qrcode_generation import get_qrcode_image_url

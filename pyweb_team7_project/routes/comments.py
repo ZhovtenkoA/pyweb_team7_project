@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from pyweb_team7_project.database.db import get_db
 from pyweb_team7_project.database.models import User, Role
+from pyweb_team7_project.repository import images as images_repo
 from pyweb_team7_project.repository import comments as comments_repo
 from pyweb_team7_project.schemas import (
     CommentResponseModel,
@@ -57,7 +58,7 @@ async def get_all_image_comments(
     :param db: The database session used to interact with the database.
     :return: A list of comment objects.
     """
-    comments_result = await comments_repo.get_all_image_comments(
+    comments_result = await images_repo.get_all_image_comments(
         image_id=image_id, skip=skip, limit=limit, db=db
     )
     return comments_result
@@ -83,7 +84,7 @@ async def create_comment(
     :return: The created comment object.
     :raises HTTPException: If the image with the specified ID does not exist.
     """
-    image_db = await comments_repo.get_image_by_id(image_id=body.image_id, db=db)
+    image_db = await images_repo.get_image_by_id(image_id=body.image_id, db=db)
 
     if not image_db:
         raise HTTPException(

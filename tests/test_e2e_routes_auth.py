@@ -21,6 +21,10 @@ def test_create_user(client, user, monkeypatch):
 
     assert db_user["email"] == user.get("email")
     assert "id" in db_user
+    assert 'username' in db_user 
+    assert 'email' in db_user 
+    assert 'avatar' in db_user 
+    assert 'role' in db_user 
 
 
 def test_repeat_create_user(client, user):

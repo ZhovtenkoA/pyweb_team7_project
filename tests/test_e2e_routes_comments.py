@@ -22,7 +22,7 @@ def test_create_comment(client, comment, token, image, monkeypatch):
         return image
 
     monkeypatch.setattr(
-        "pyweb_team7_project.routes.comments.comments_repo.get_image_by_id",
+        "pyweb_team7_project.repository.images.get_image_by_id",
         mock_get_image_by_id,
     )
 
