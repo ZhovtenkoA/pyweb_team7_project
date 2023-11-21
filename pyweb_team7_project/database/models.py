@@ -24,7 +24,7 @@ class User(Base):
     access_token = Column(String(250), nullable=True)
     refresh_token = Column(String(250), nullable=True)
     confirmed = Column(Boolean, default=False)
-    role: Mapped[Enum] = Column('role', Enum(Role), default=Role.admin)
+    role: Mapped[Enum] = Column("role", Enum(Role), default=Role.admin)
 
 
 class Image(Base):
@@ -76,7 +76,9 @@ class Comment(Base):
     id = Column(Integer, primary_key=True)
     content = Column(String(250), nullable=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    edited_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    edited_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", backref="comments")
     image_id = Column(Integer, ForeignKey("images.id"))

@@ -16,7 +16,8 @@ class UserDb(BaseModel):
     username: str
     email: str
     avatar: str
-    role: Role 
+    role: Role
+
     class Config:
         # orm_mode = True
         from_attributes = True
@@ -90,7 +91,9 @@ class ImageResponse(BaseModel):
 
 
 class QRCodeRequestTest(BaseModel):
-    qr_data: str = Field("https://github.com/ZhovtenkoA/pyweb_team7_project", max_length=250)
+    qr_data: str = Field(
+        "https://github.com/ZhovtenkoA/pyweb_team7_project", max_length=250
+    )
 
 
 class QRCodeResponse(BaseModel):
