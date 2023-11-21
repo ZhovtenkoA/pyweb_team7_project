@@ -20,21 +20,14 @@ ALGORITHM = "HS256"
 
 
 @router.post("/signup", response_model=ResponseUser, status_code=status.HTTP_201_CREATED)
-async def signup(body: UserModel, db: Session = Depends(get_db)):
-    """
-    The signup function creates a new user in the database.
-        It takes an email and password as input, hashes the password, and stores it in the database.
-        If there is already a user with that email address, it returns an error message.
-    
-    :param body: UserModel: Get the data from the request body
-    :param db: Session: Pass the database session to the function
-    :return: A dict, but the function expects a usermodel
-    """
+async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
+
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
     body.password = auth_service.get_password_hash(body.password)
     new_user = await repository_users.create_user(body, db)
+    background_tasks.add_task(send_email, new_user.email, new_user.username, request.base_url)
     return {"user": new_user, "detail": "User successfully created"}
 
 
