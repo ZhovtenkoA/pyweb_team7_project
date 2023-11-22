@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
 from pyweb_team7_project.database.db import get_db
-from pyweb_team7_project.database.models import User, Role
 from pyweb_team7_project.services.auth import auth_service
 from pyweb_team7_project.database.models import User, Role
 from pyweb_team7_project.schemas import UserDb
@@ -13,9 +12,7 @@ from pydantic import EmailStr
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get(
-    "/get_all", response_model=list[UserDb], dependencies=[Depends(free_access)]
-)
+@router.get("/get_all", response_model=list[UserDb], dependencies=[Depends(free_access)])
 async def get_all_users(
     skip: int = 0,
     limit: int = 10,
@@ -24,26 +21,16 @@ async def get_all_users(
 ):
     """
     **Get a list of users.**
-
     This route allows to get a list of pagination-aware users.
-
     Level of Access:
-
     - Current authorized user
-
     :param skip: int: Number of users to skip.
-
     :param limit: int: Maximum number of users to return.
-
     :param current_user: User: Current authenticated user.
-
     :param db: Session: Database session.
-
     :return: List of users.
-
     :rtype: List[UserDb]
     """
-
     list_users = await users.get_users(skip, limit, db)
     return list_users
 
@@ -69,12 +56,9 @@ async def assign_role(email: EmailStr, role: Role, db: Session = Depends(get_db)
 
     :rtype: dict
     """
-
     user = await users.get_user_by_email(email, db)
-
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
     if role == user.role:
         return {"message": "The role has already been assigned to this user"}
     else:
