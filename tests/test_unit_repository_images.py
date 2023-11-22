@@ -28,6 +28,7 @@ from sqlalchemy.orm import sessionmaker
 from pyweb_team7_project.database.models import Base
 from pyweb_team7_project.database import db
 
+
 class ImagesTest(unittest.IsolatedAsyncioTestCase):
     @patch("pyweb_team7_project.repository.images")
     @patch("pyweb_team7_project.services.auth.auth_service")

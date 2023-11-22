@@ -12,7 +12,7 @@ from pyweb_team7_project.repository.users import (
     make_user_role)
 
 
-class TestUserFunctions(unittest.TestCase):
+class TestUserFunctions(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self):
         self.session = MagicMock(spec=Session)

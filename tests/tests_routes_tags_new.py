@@ -14,7 +14,7 @@ class TestReadTagsEndpoint(unittest.TestCase):
         self.assertIsInstance(response.json(), dict)
 
 
-class TestReadTagEndpoint(unittest.TestCase):
+class TestReadTagEndpoint(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.client = TestClient(app)
 
@@ -29,7 +29,7 @@ class TestReadTagEndpoint(unittest.TestCase):
         self.assertEqual(response.json(), {'detail': 'Not Found'})
 
 
-class TestCreateTagEndpoint(unittest.TestCase):
+class TestCreateTagEndpoint(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.client = TestClient(app)
 
