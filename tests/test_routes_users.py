@@ -23,8 +23,8 @@ async def get_all_users(
     return list_users
 
 
-@app.patch("/users/assign_role/{role:Role}", dependencies=[Depends(admin)])
-async def assign_role(email: EmailStr, role: Role, db: Session = Depends(get_db)):
+@app.patch("/users/assign_role/{role}", dependencies=[Depends(admin)])
+async def assign_role(email: EmailStr, role: str, db: Session = Depends(get_db)):
     user = await users.get_user_by_email(email, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -32,4 +32,4 @@ async def assign_role(email: EmailStr, role: Role, db: Session = Depends(get_db)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Role already assigned")
 
     await users.make_user_role(email, role, db)
-    return {"message": f"Role assigned to {email}: {role.value}"}
+    return {"message": f"Role assigned to {email}: {role}"}
