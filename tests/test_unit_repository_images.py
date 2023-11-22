@@ -226,8 +226,8 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
     async def test_delete_image_not_found(self):
         image_id = None
         existing_image = Image(id=image_id, user_id=self.user.id)
-        self.session.query().filter().first.return_value = existing_image  
-        result = await delete_image(user=self.user, db=self.session, image_id=image_id)  
+        self.session.query().filter().first.return_value = existing_image
+        result = await delete_image(user=self.user, db=self.session, image_id=image_id) 
         self.assertEqual(result, existing_image)
 
     async def test_get_QR(self):
