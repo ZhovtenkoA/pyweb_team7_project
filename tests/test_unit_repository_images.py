@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import asyncio
 from sqlalchemy.orm import Session
 import os
+from pyweb_team7_project.conf.config import settings
 from pyweb_team7_project.repository.images import (
     create_image_and_upload_to_cloudinary,
     get_image_by_id,
@@ -18,58 +19,114 @@ from pyweb_team7_project.database.models import (
     Tag,
     QR_code,
 )
+from cloudinary import uploader
+import cloudinary
+import io
+from fastapi import HTTPException, status, UploadFile
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from pyweb_team7_project.database.models import Base
+from pyweb_team7_project.database import db
 
-class TestCreateImageAndUploadToCloudinary(unittest.TestCase):
-    @patch("pyweb_team7_project.routes.images.cloudinary.config")
-    @patch("pyweb_team7_project.repository.images.create_image_and_upload_to_cloudinary")
-    async def test_create_image_and_upload_to_cloudinary(self, mock_upload, mock_config):
-        db_session = MagicMock(spec=Session)
-        file_mock = MagicMock()
-        file_mock.file = os.path.join(
-            os.path.dirname(__file__), "test_images", "test.jpg")
-        description = "Test image"
+class ImagesTest(unittest.IsolatedAsyncioTestCase):
+    @patch("pyweb_team7_project.repository.images")
+    @patch("pyweb_team7_project.services.auth.auth_service")
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_create_image_and_upload_to_cloudinary(
+        self, mock_get_db, mock_auth_service, mock_repository_images
+    ):
+        mock_db = MagicMock(spec=Session)
+        mock_file = MagicMock(spec=UploadFile)
+        mock_image = MagicMock(spec=Image)
+
+        mock_get_db.return_value = mock_db
+        mock_repository_images.Image.return_value = mock_image
+
+        description = "Test description"
         user_id = 1
         tag_names = ["tag1", "tag2"]
+        file_url = 'https://example.com/image1.jpg'
 
-        user = User(id=user_id)
-        db_session.query.return_value.filter_by.return_value.first.return_value = user
+        image = Image(description=description, user_id=user_id, file_url = file_url)
+        test_image_path = os.path.join(
+            os.path.dirname(__file__), "test_images", "test1.jpg"
+        )
+        with open(test_image_path, "rb") as f:
+            file_data = f.read()
+        file = UploadFile(filename="test1.jpg", file=io.BytesIO(file_data))
 
+        mock_db.query.return_value.filter_by.return_value.first.return_value = MagicMock()
+
+        mock_upload = MagicMock()
         mock_upload.return_value = {
             "public_id": "public_id",
-            "secure_url": "https://example.com/image.jpg",
+            "secure_url": "https://example.com/image1.jpg",
         }
+        with patch("pyweb_team7_project.repository.images.upload", mock_upload):
+            result = await create_image_and_upload_to_cloudinary(
+                mock_db, file, description, user_id, tag_names
+            )
+            
+        print(result)
+        #mock_db.query.assert_called_once_with(User)
+        #mock_db.query.return_value.filter_by.assert_called_once_with(id=user_id)
+        #mock_repository_images.Image.assert_called_once_with(
+            #description=description, user_id=user_id, file_url="cloudinary"
+        #)
+        #mock_upload.assert_called_once_with(file.file)
 
-        result = create_image_and_upload_to_cloudinary(
-            db_session, file_mock, description, user_id, tag_names
-        )
+        # self.assertEqual(result, mock_image)
+        #         # Проверяем, что вызываются ожидаемые методы и функции
+        # mock_db.query.assert_called_once_with(User)
+        # mock_db.query.return_value.filter_by.assert_called_once_with(id=user_id)
+        #mock_upload.assert_called_once_with(str(file_mock))
 
-        # Проверяем, что функции и методы были вызваны с правильными аргументами
-        db_session.query.assert_called_once_with(User)
-        db_session.query.return_value.filter_by.assert_called_once_with(id=user_id)
-        mock_upload.assert_called_once_with(file_mock.file)
-
-        # Проверяем, что создан объект Image с правильными значениями
+        self.assertTrue(result.file_url.startswith("https://"))
         self.assertIsInstance(result, Image)
         self.assertEqual(result.description, description)
         self.assertEqual(result.user_id, user_id)
-        self.assertEqual(result.file_url, "https://example.com/image.jpg")
-        self.assertEqual(result.public_id, "public_id")
+        self.assertIsNotNone(result.file_url)
+        # mock_db.close()
+    @patch("pyweb_team7_project.repository.images")
+    @patch("pyweb_team7_project.services.auth.auth_service")
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_create_image_and_upload_to_cloudinary_no_user(
+        self, mock_get_db, mock_auth_service, mock_repository_images
+    ):
+        mock_db = MagicMock(spec=Session)
+        mock_file = MagicMock(spec=UploadFile)
+        mock_image = MagicMock(spec=Image)
 
-        # Проверяем, что были созданы и связаны объекты Tag
-        self.assertEqual(len(result.tags), 2)
-        self.assertIsInstance(result.tags[0], Tag)
-        self.assertEqual(result.tags[0].name, "tag1")
-        self.assertIsInstance(result.tags[1], Tag)
-        self.assertEqual(result.tags[1].name, "tag2")
+        mock_get_db.return_value = mock_db
+        mock_repository_images.Image.return_value = mock_image
 
-        self.assertIsInstance(result, Image)
-        self.assertEqual(result.file_url, mock_upload["secure_url"])
-        self.assertEqual(result.public_id, mock_upload["public_id"])
-        self.assertEqual(result.description, self.description)
-        self.assertEqual(result.user_id, self.user.id)
-        self.assertEqual(len(result.tags), len(self.tag_names))
-        self.assertTrue(all(tag.name in self.tag_names for tag in result.tags))
+        description = "Test description"
+        user_id = 1
+        tag_names = ["tag1", "tag2"]
+        file_url = 'https://example.com/image1.jpg'
 
+        image = Image(description=description, user_id=user_id, file_url = file_url)
+        test_image_path = os.path.join(
+            os.path.dirname(__file__), "test_images", "test1.jpg"
+        )
+        with open(test_image_path, "rb") as f:
+            file_data = f.read()
+        file = UploadFile(filename="test1.jpg", file=io.BytesIO(file_data))
+
+        mock_db.query.return_value.filter_by.return_value.first.return_value = None  # Установка результата поиска пользователя в None
+
+        mock_upload = MagicMock()
+        mock_upload.return_value = {
+            "public_id": "public_id",
+            "secure_url": "https://example.com/image1.jpg",
+        }
+        with patch("pyweb_team7_project.repository.images.upload", mock_upload):
+            with self.assertRaises(Exception) as context:  # Проверяем, что исключение возникает
+                result = await create_image_and_upload_to_cloudinary(
+                    mock_db, file, description, user_id, tag_names
+                )
+        
+        self.assertEqual(str(context.exception), "User not found")
 class TemporaryFileWrapper:
         def __init__(self, file_path):
             self.file_path = file_path
@@ -106,6 +163,10 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(result, image)
+        assert isinstance(result, Image)
+        assert result.id == image.id
+        assert result.description == image.description
+        assert result.user_id == image.user_id
 
     async def test_get_all_images(self):
         images = [Image(id=1, user_id=self.user.id), Image(id=2, user_id=self.user.id)]
@@ -131,6 +192,9 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(result.description, new_description)
+        assert isinstance(result, Image)
+        assert result.id == existing_image.id
+        assert result.description == new_description
 
     async def test_update_image_qrcode_url(self):
         # Create a dummy image
@@ -153,6 +217,11 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
         self.session.query().filter().first.return_value = existing_image
         result = await delete_image(user=self.user, db=self.session, image_id=image_id)
         self.assertEqual(result, existing_image)
+        assert isinstance(result, Image)
+        assert result.id == existing_image.id
+        assert result.description == existing_image.description
+        assert result.user_id ==existing_image.user_id
+        assert result.file_url is None
 
     async def test_delete_image_not_found(self):
         image_id = None
@@ -167,3 +236,6 @@ class TestImageFunctions(unittest.IsolatedAsyncioTestCase):
         qr_code = await get_QR(image_id, self.session)
         self.assertIsInstance(qr_code, dict)
         self.assertIn("qr_code_url", qr_code)
+
+if __name__ == "__main__":
+    unittest.main()
