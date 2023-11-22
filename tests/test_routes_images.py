@@ -10,7 +10,6 @@ from pyweb_team7_project.database.models import User, Image
 from pyweb_team7_project.repository.images import create_image_and_upload_to_cloudinary, get_image_by_id, get_all_images, delete_image
 from pyweb_team7_project.routes.images import transformations_grayscale, transformations_auto_color, transformations_sepia, transformations_blur, transformations_brown_outline
 from pyweb_team7_project.schemas import ImageResponse
-from pyweb_team7_project.conf.config import settings
 import asyncio
 
 
