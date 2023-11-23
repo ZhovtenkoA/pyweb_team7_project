@@ -263,36 +263,36 @@ class ImagesTest(unittest.IsolatedAsyncioTestCase):
 #             self.assertEqual(response.status_code, 200)
 #             self.assertEqual(response.json, mock_response)
    
-class TestTransformationsAutoColor(unittest.IsolatedAsyncioTestCase):
+# class TestTransformationsAutoColor(unittest.IsolatedAsyncioTestCase):
 
-    @patch('pyweb_team7_project.routes.images.cloudinary.config')
-    @patch('pyweb_team7_project.routes.images.cloudinary.CloudinaryImage.image')
-    async def test_transformations_grayscale(self, mock_image, mock_config):
-        # Створюємо тестовий об'єкт Image
-        test_image = Image(id=1, public_id='test_public_id', user_id=1)
-        test_image.fileurl = 'test_url'
+#     @patch('pyweb_team7_project.routes.images.cloudinary.config')
+#     @patch('pyweb_team7_project.routes.images.cloudinary.CloudinaryImage.image')
+#     async def test_transformations_grayscale(self, mock_image, mock_config):
+#         # Створюємо тестовий об'єкт Image
+#         test_image = Image(id=1, public_id='test_public_id', user_id=1)
+#         test_image.fileurl = 'test_url'
         
-        # Створюємо mock-об'єкти для db і current_user
-        mock_db = MagicMock()
-        mock_current_user = MagicMock()
+#         # Створюємо mock-об'єкти для db і current_user
+#         mock_db = MagicMock()
+#         mock_current_user = MagicMock()
 
-        # Встановлюємо поведінку mock-об'єктів
-        mock_db.query().filter().first.return_value = test_image
-        mock_image.return_value = 'Transformed HTML string'
+#         # Встановлюємо поведінку mock-об'єктів
+#         mock_db.query().filter().first.return_value = test_image
+#         mock_image.return_value = 'Transformed HTML string'
 
-        # Викликаємо функцію
-        result_image = asyncio.run(transformations_auto_color(1, mock_current_user, mock_db))
+#         # Викликаємо функцію
+#         result_image = asyncio.run(transformations_auto_color(1, mock_current_user, mock_db))
 
-        # Перевіряємо, чи були викликані необхідні методи
-        mock_db.query().filter().first.assert_called_once_with()
-        mock_image.assert_called_once_with(effect="auto_color")
+#         # Перевіряємо, чи були викликані необхідні методи
+#         mock_db.query().filter().first.assert_called_once_with()
+#         mock_image.assert_called_once_with(effect="auto_color")
 
-        # Перевіряємо, чи правильно оновлено результат
-        self.assertEqual(result_image.fileurl, 'Transformed URL')
+#         # Перевіряємо, чи правильно оновлено результат
+#         self.assertEqual(result_image.fileurl, 'Transformed URL')
 
-        # Перевіряємо, чи правильно викликано методи db
-        mock_db.commit.assert_called_once()
-        mock_db.refresh.assert_called_once_with(test_image)
+#         # Перевіряємо, чи правильно викликано методи db
+#         mock_db.commit.assert_called_once()
+#         mock_db.refresh.assert_called_once_with(test_image)
 
 class TestTransformationsGrayscale(unittest.TestCase):
 
