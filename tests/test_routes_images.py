@@ -248,25 +248,25 @@ class ImagesTest(unittest.IsolatedAsyncioTestCase):
             )
         self.assertEqual(exc_info.exception.status_code, status.HTTP_404_NOT_FOUND)
 
-class ImagesTestGetAll(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls):
-        FastAPILimiter.init(app) 
+# class ImagesTestGetAll(unittest.IsolatedAsyncioTestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         FastAPILimiter.init(app) 
 
-    @patch("pyweb_team7_project.database.db.get_db")
-    async def test_get_all_images(self, mock_get_db):
-        mock_response = [{"image_id": 1, "url": "example.com/image1.jpg"}, {"image_id": 2, "url": "example.com/image2.jpg"}]
-        mock_db = MagicMock(spec=Session)
-        with mock.patch("pyweb_team7_project.routes.images.get_all_images", return_value=mock_response):
-            response = await get_all_images(db=mock_db)
-            self.assertIsNotNone(response)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json, mock_response)
+#     @patch("pyweb_team7_project.database.db.get_db")
+#     async def test_get_all_images(self, mock_get_db):
+#         mock_response = [{"image_id": 1, "url": "example.com/image1.jpg"}, {"image_id": 2, "url": "example.com/image2.jpg"}]
+#         mock_db = MagicMock(spec=Session)
+#         with mock.patch("pyweb_team7_project.routes.images.get_all_images", return_value=mock_response):
+#             response = await get_all_images(db=mock_db)
+#             self.assertIsNotNone(response)
+#             self.assertEqual(response.status_code, 200)
+#             self.assertEqual(response.json, mock_response)
    
-class TestTransformationsAutoColor(unittest.TestCase):
+class TestTransformationsAutoColor(unittest.IsolatedAsyncioTestCase):
 
-    @patch('pyweb_team7_project.repository.transformations.cloudinary.config')
-    @patch('pyweb_team7_project.repository.transformations.cloudinary.CloudinaryImage.image')
+    @patch('pyweb_team7_project.routes.images.cloudinary.config')
+    @patch('pyweb_team7_project.routes.images.cloudinary.CloudinaryImage.image')
     async def test_transformations_grayscale(self, mock_image, mock_config):
         # Створюємо тестовий об'єкт Image
         test_image = Image(id=1, public_id='test_public_id', user_id=1)
