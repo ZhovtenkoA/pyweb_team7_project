@@ -32,7 +32,7 @@ class TestUserFunctions(unittest.IsolatedAsyncioTestCase):
 
     @patch('libgravatar.Gravatar.get_image')
     async def test_create_user(self, mock_gravatar_get_image):
-        user_model = UserModel(email="test@example.com", password="password")
+        user_model = UserModel(username="username", email="test@example.com", password="1234565")
         mock_gravatar_get_image.return_value = "mocked_avatar_url"
 
         result = await create_user(body=user_model, db=self.session)
