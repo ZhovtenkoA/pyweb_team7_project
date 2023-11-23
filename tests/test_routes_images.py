@@ -1,18 +1,25 @@
 import unittest
 from unittest.mock import patch, MagicMock
+from unittest import mock
 import io
 import os
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, UploadFile
 from pyweb_team7_project.routes import images
-from pyweb_team7_project.database.models import User, Image
-from pyweb_team7_project.repository.images import create_image_and_upload_to_cloudinary, get_image_by_id, get_all_images, delete_image
-from pyweb_team7_project.routes.images import transformations_grayscale, transformations_auto_color, transformations_sepia, transformations_blur, transformations_brown_outline
-from pyweb_team7_project.schemas import ImageResponse
+from pyweb_team7_project.database.models import User, Image, Role
+from pyweb_team7_project.repository.images import get_all_images
+from pyweb_team7_project.routes.images import transformations_grayscale, transformations_auto_color, transformations_sepia, transformations_blur, transformations_brown_outline, get_image, delete_image, update_image
+from pyweb_team7_project.schemas import ImageResponse, UpdateImageModel
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 import fastapi
+import pytest
+from fastapi.testclient import TestClient
+from main import app
+from fastapi_limiter import FastAPILimiter
+from starlette import status as starlette_status
+client = TestClient(app)
 
 class ImagesTest(unittest.IsolatedAsyncioTestCase):
     @patch("pyweb_team7_project.repository.images")
@@ -57,203 +64,204 @@ class ImagesTest(unittest.IsolatedAsyncioTestCase):
         # self.assertEqual(result, image)
 
 
-    # @patch("pyweb_team7_project.repository.images")
-    # @patch("pyweb_team7_project.services.auth.auth_service")
-    # @patch("pyweb_team7_project.database.db.get_db")
-    # async def test_create_image_with_edge_cases(
-    #     self, mock_get_db, mock_auth_service, mock_repository_images
-    # ):
-    #     # Test case with edge cases
-    #     mock_db = MagicMock(spec=Session)
-    #     mock_current_user = MagicMock(spec=User)
-    #     mock_file = MagicMock(spec=UploadFile)
-    #     mock_response = MagicMock(spec=Image)
+    @patch("pyweb_team7_project.repository.images")
+    @patch("pyweb_team7_project.services.auth.auth_service")
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_create_image_with_edge_cases(
+        self, mock_get_db, mock_auth_service, mock_repository_images
+    ):
+        # Test case with edge cases
+        mock_db = MagicMock(spec=Session)
+        mock_current_user = MagicMock(spec=User)
+        mock_file = MagicMock(spec=UploadFile)
+        mock_response = MagicMock(spec=Image)
+        test_image_path = os.path.join(
+            os.path.dirname(__file__), "test_images", "test1.jpg"
+        )
+        with open(test_image_path, "rb") as f:
+            file_data = f.read()
+        file = UploadFile(filename="test1.jpg", file=io.BytesIO(file_data))
+        mock_get_db.return_value = mock_db
+        mock_auth_service.get_current_user.return_value = mock_current_user
+        mock_repository_images.create_image_and_upload_to_cloudinary.return_value = mock_response
 
-    #     mock_get_db.return_value = mock_db
-    #     mock_auth_service.get_current_user.return_value = mock_current_user
-    #     mock_repository_images.create_image_and_upload_to_cloudinary.return_value = mock_response
+        description = "description"
+        tags = "verylongdescriptionofimagesandtags"
+        with pytest.raises(fastapi.exceptions.HTTPException) as e:
+            await images.create_image(
+                description=description,
+                tags=tags,
+                file=file,
+                current_user=mock_current_user,
+                db=mock_db,
+            )
+        assert e.value.status_code == 400
+        assert e.value.detail == "Tag name should be no more than 25 characters long."
 
-    #     description = "A"  # Maximum length description
-    #     tags = "tag1, " + "tag2," * 1000  # Maximum number of tags
-    #     try:
-    #         result = await images.create_image(
-    #             description=description,
-    #             tags=tags,
-    #             file=mock_file,
-    #             current_user=mock_current_user,
-    #             db=mock_db,
-    #         )
-    #     except fastapi.exceptions.HTTPException as e:
-    #     # Проверка соответствующей ошибки
-    #         assert e.status_code == 400
-    #         assert e.detail == "You can't add more than 5 tags to a photo."
+    @patch("pyweb_team7_project.repository.images.get_image_by_id")
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_get_image_with_valid_id(self, mock_get_db, mock_get_image_by_id):
+        mock_db = MagicMock(spec=Session)
+        mock_current_user = MagicMock(spec=User)
+        description = "Test description"
+        user_id = 1
+        image_id = 1
+        tag_names = ['tag1', 'tag2']
+        file_url = 'https://example.com/image1.jpg'
+        image = Image(id=image_id, description=description, user_id=user_id, file_url=file_url, tags=tag_names)
+        mock_db_instance = Session()  # Создание реального экземпляра класса Session
+        mock_get_db.return_value = mock_db_instance  # Использование реального экземпляра вместо мок-объекта
+        mock_get_image_by_id.return_value = image
 
-    #     mock_repository_images.create_image_and_upload_to_cloudinary.assert_called_once_with(
-    #         mock_db,
-    #         mock_file,
-    #         description=description,
-    #         user_id=mock_current_user.id,
-    #         tag_names=["tag1"] + ["tag2"] * 999,
-    #     )
-    #     self.assertEqual(result, mock_response)
+        result = await get_image(
+            #user=mock_current_user,
+            db=mock_db,
+            image_id=image.id,
+        )
+        print (result)
+        self.assertIsNotNone(result)
+        self.assertEqual(description, result.description)
+        self.assertIsInstance(result, Image)
+        
 
+    @patch("pyweb_team7_project.repository.images.get_image_by_id")
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_get_image_with_invalid_id(self, mock_get_db, mock_get_image_by_id):
+        mock_db = MagicMock(spec=Session)
+        mock_current_user = MagicMock(spec=User)
+        description = "Test description"
+        user_id = 1
+        image_id = None
+        tag_names = ['tag1', 'tag2']
+        file_url = 'https://example.com/image1.jpg'
+        image = Image(id=image_id, description=description, user_id=user_id, file_url=file_url, tags=tag_names)
+        mock_db_instance = Session()  # Создание реального экземпляра класса Session
+        mock_get_db.return_value = mock_db_instance  # Использование реального экземпляра вместо мок-объекта
+        mock_get_image_by_id.return_value = None
 
-    # @patch("pyweb_team7_project.repository.images")
-    # @patch("pyweb_team7_project.services.auth.auth_service")
-    # @patch("pyweb_team7_project.database.db.get_db")
-    # async def test_create_image_with_exception(
-    #     self, mock_get_db, mock_auth_service, mock_repository_images
-    # ):
-    #     mock_db = MagicMock(spec=Session)
-    #     mock_current_user = MagicMock(spec=User)
-    #     mock_file = MagicMock(spec=UploadFile)
-
-    #     mock_get_db.return_value = mock_db
-    #     mock_auth_service.get_current_user.return_value = mock_current_user
-    #     mock_repository_images.create_image_and_upload_to_cloudinary.side_effect = Exception("Test exception")
-
-    #     description = "Test description"
-    #     tags = "tag1, tag2"
-    #     file = MagicMock(spec=UploadFile)
-
-    #     result = await images.create_image(
-    #         description=description,
-    #         tags=tags,
-    #         file=file,
-    #         current_user=mock_current_user,
-    #         db=mock_db,
-    #     )
-
-    #     mock_repository_images.create_image_and_upload_to_cloudinary.assert_called_once_with(
-    #         mock_db,
-    #         file,
-    #         description=description,
-    #         user_id=mock_current_user.id,
-    #         tag_names=["tag1", "tag2"],
-    #     )
-    #     self.assertIsNone(result)
-
-    # @patch("pyweb_team7_project.repository.images")
-    # @patch("pyweb_team7_project.services.auth.auth_service")
-    # @patch("pyweb_team7_project.database.db.get_db")
-    # async def test_create_image_with_none_response(
-    #     self, mock_get_db, mock_auth_service, mock_repository_images
-    # ):
-    #     mock_db = MagicMock(spec=Session)
-    #     mock_current_user = MagicMock(spec=User)
-    #     mock_file = MagicMock(spec=UploadFile)
-
-    #     mock_get_db.return_value = mock_db
-    #     mock_auth_service.get_current_user.return_value = mock_current_user
-    #     mock_repository_images.create_image_and_upload_to_cloudinary.return_value = None
-
-    #     description = "Test description"
-    #     tags = "tag1, tag2"
-    #     file = MagicMock(spec=UploadFile)
-
-    #     result = await images.create_image(
-    #         description=description,
-    #         tags=tags,
-    #         file=file,
-    #         current_user=mock_current_user,
-    #         db=mock_db,
-    #     )
-
-    #     mock_repository_images.create_image_and_upload_to_cloudinary.assert_called_once_with(
-    #         mock_db,
-    #         file,
-    #         description=description,
-    #         user_id=mock_current_user.id,
-    #         tag_names=["tag1", "tag2"],
-    #     )
-    #     self.assertIsNone(result)
-
-    # @patch("pyweb_team7_project.repository.images.get_image_by_id")
-    # async def test_get_image_with_valid_id(self, mock_get_image_by_id):
-    #     mock_db = MagicMock(spec=Session)
-    #     mock_current_user = MagicMock(spec=User)
-    #     image_id = 1
-    #     mock_image = MagicMock(spec=ImageResponse)
-    #     mock_get_image_by_id.return_value = mock_image
-
-    #     result = get_image_by_id(
-    #         image_id=image_id,
-    #         user=mock_current_user,
-    #         db=mock_db,
-    #     )
-
-    #     mock_get_image_by_id.assert_called_once_with(
-    #         mock_current_user, mock_db, image_id
-    #     )
-    #     self.assertEqual(result, mock_image)
-
-    # @patch("pyweb_team7_project.repository.images.get_image_by_id")
-    # async def test_get_image_with_invalid_id(self, mock_get_image_by_id):
-    #     mock_db = MagicMock(spec=Session)
-    #     mock_current_user = MagicMock(spec=User)
-    #     image_id = None
-    #     mock_get_image_by_id.return_value = None
-
-    #     try:
-    #         get_image_by_id(
-    #             image_id=image_id,
-    #             user=mock_current_user,
-    #             db=mock_db,
-    #         )
+        try:
+            result = await get_image(
+            #user=mock_current_user,
+            db=mock_db,
+            image_id=image.id,
+        )
             
-    #         self.fail("HTTPException not raised")
-    #     except HTTPException as e:
-    #         self.assertEqual(e.status_code, status.HTTP_404_NOT_FOUND)
-    #         self.assertEqual(e.detail, "Image not found")
+            #self.fail("HTTPException not raised")
+        except HTTPException as e:
+            self.assertEqual(e.status_code, status.HTTP_404_NOT_FOUND)
+            self.assertEqual(e.detail, "Image not found")
 
-    #     mock_get_image_by_id.assert_called_once_with(
-    #         mock_current_user, mock_db, image_id
-    #     )
 
-    # @patch("pyweb_team7_project.repository.images.get_image_by_idd")
-    # @patch("pyweb_team7_project.repository.images.delete_image")
-    # async def test_delete_image_with_valid_id(self, mock_delete_image, mock_get_image_by_id):
-    #     mock_db = MagicMock()
-    #     mock_current_user = MagicMock()
-    #     image_id = 1
-    #     mock_image = MagicMock()
-    #     mock_get_image_by_id.return_value = mock_image
+    @patch("pyweb_team7_project.repository.images.get_image_by_id")
+    @patch("pyweb_team7_project.repository.images.delete_image")
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_delete_image(self, mock_delete_image, mock_get_db, mock_get_image_by_id):
+        mock_db = MagicMock(spec=Session)
+        mock_current_user = MagicMock(spec=User)
+        description = "Test description"
+        user_id = 2
+        image_id = 1
+        tag_names = ['tag1', 'tag2']
+        file_url = 'https://example.com/image1.jpg'
+        image = Image(id=image_id, description=description, user_id=user_id, file_url=file_url, tags=tag_names)
+        mock_db_instance = Session()  # Создание реального экземпляра класса Session
+        mock_get_db.return_value = mock_db_instance
+        mock_get_image_by_id.return_value = image
+        user2 = User(id = 2, email = "test@example.com", username = "test", role =Role("admin"))
+        result = await delete_image(
+            image_id=image_id,
+            current_user=user2,
+            db=mock_db,
+        )
+        self.assertIsNotNone(result)
 
-    #     result = await delete_image(
-    #         image_id=image_id,
-    #         current_user=mock_current_user,
-    #         db=mock_db,
-    #     )
+        # Проверка ошибки HTTPException при отсутствии разрешения
+        user1 = User(id = 1, email = "test@example.com", username = "test", role =Role("moderator"))
+        mock_current_user.id = 2
+        mock_current_user.role = "user"
+        with self.assertRaises(HTTPException) as exc_info:
+            await delete_image(
+                image_id=image_id,
+                current_user=user1,
+                db=mock_db,
+            )
+        self.assertEqual(exc_info.exception.status_code, status.HTTP_403_FORBIDDEN)
 
-    #     mock_get_image_by_id.assert_called_once_with(
-    #         user=mock_current_user, image_id=image_id, db=mock_db
-    #     )
-    #     mock_delete_image.assert_called_once_with(
-    #         current_user=mock_current_user, db=mock_db, image_id=image_id
-    #     )
-    #     self.assertEqual(result, mock_image)
+        # Проверка ошибки HTTPException при отсутствии изображения
+        mock_get_image_by_id.return_value = None
+        with self.assertRaises(HTTPException) as exc_info:
+            await delete_image(
+                image_id=image_id,
+                current_user=user1,
+                db=mock_db,
+            )
+        self.assertEqual(exc_info.exception.status_code, status.HTTP_404_NOT_FOUND)
 
-    # @patch("pyweb_team7_project.api.routes.images.repository_images.get_image_by_id")
-    # async def test_delete_image_with_invalid_id(self, mock_get_image_by_id):
-    #     mock_db = MagicMock()
-    #     mock_current_user = MagicMock()
-    #     image_id = None
-    #     mock_get_image_by_id.return_value = None
+    @patch("pyweb_team7_project.repository.images.get_image_by_id")
+    @patch("pyweb_team7_project.repository.images.update_image_description")
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_update_image(self, mock_get_db, mock_update_image_description, mock_get_image_by_id):
+        mock_db = MagicMock(spec=Session)
+        mock_current_user = MagicMock(spec=User)
+        description = "Test description"
+        new_description = "Test description created with new description"
+        body =  UpdateImageModel
+        body.new_description = new_description
+        user_id = 2
+        image_id = 1
+        tag_names = ['tag1', 'tag2']
+        file_url = 'https://example.com/image1.jpg'
+        image = Image(id=image_id, description=description, user_id=user_id, file_url=file_url, tags=tag_names)
+        mock_db_instance = Session()  # Создание реального экземпляра класса Session
+        mock_get_db.return_value = mock_db_instance
+        mock_get_image_by_id.return_value = image
+        user2 = User(id = 2, email = "test@example.com", username = "test", role =Role("admin"))
+        result = await update_image(
+            image_id=image_id,
+            current_user=user2,
+            db=mock_db,
+            body = body
+        )
+        self.assertIsNotNone(result)
 
-    #     try:
-    #         await delete_image(
-    #             image_id=image_id,
-    #             current_user=mock_current_user,
-    #             db=mock_db,
-    #         )
-    #         self.fail("HTTPException not raised")
-    #     except HTTPException as e:
-    #         self.assertEqual(e.status_code, status.HTTP_404_NOT_FOUND)
-    #         self.assertEqual(e.detail, "Image not found")
+        # Проверка ошибки HTTPException при отсутствии разрешения
+        user1 = User(id = 1, email = "test@example.com", username = "test", role =Role("moderator"))
+        mock_current_user.id = 2
+        mock_current_user.role = "user"
+        with self.assertRaises(HTTPException) as exc_info:
+            await update_image(
+                image_id=image_id,
+                current_user=user1,
+                db=mock_db,
+                body = body
+            )
+        self.assertEqual(exc_info.exception.status_code, status.HTTP_403_FORBIDDEN)
 
-    #     mock_get_image_by_id.assert_called_once_with(
-    #         user=mock_current_user, image_id=image_id, db=mock_db
-        # )
+        # Проверка ошибки HTTPException при отсутствии изображения
+        mock_get_image_by_id.return_value = None
+        with self.assertRaises(HTTPException) as exc_info:
+            await update_image(
+                image_id=image_id,
+                current_user=user1,
+                db=mock_db,
+                body = body
+            )
+        self.assertEqual(exc_info.exception.status_code, status.HTTP_404_NOT_FOUND)
+
+class ImagesTestGetAll(unittest.IsolatedAsyncioTestCase):
+    @classmethod
+    def setUpClass(cls):
+        FastAPILimiter.init(app) 
+
+    @patch("pyweb_team7_project.database.db.get_db")
+    async def test_get_all_images(self, mock_get_db):
+        mock_response = [{"image_id": 1, "url": "example.com/image1.jpg"}, {"image_id": 2, "url": "example.com/image2.jpg"}]
+        mock_db = MagicMock(spec=Session)
+        with mock.patch("pyweb_team7_project.routes.images.get_all_images", return_value=mock_response):
+            response = await get_all_images(db=mock_db)
+            self.assertIsNotNone(response)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json, mock_response)
    
 class TestTransformationsAutoColor(unittest.TestCase):
 
